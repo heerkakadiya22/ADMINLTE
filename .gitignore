@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+
+# Environment file
+.env
+
+# Session files
+sessions/
+
+# Logs
+logs/
+*.log
+
+# Build output
+dist/
+build/
+
+# Coverage reports
+coverage/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
