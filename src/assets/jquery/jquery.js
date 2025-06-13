@@ -1,79 +1,173 @@
-$.validator.addMethod(
-  "pattern",
-  function (value, element, param) {
-    return this.optional(element) || param.test(value);
-  },
-  "Invalid format."
-);
+$(document).ready(function () {
+  $.validator.addMethod(
+    "pattern",
+    function (value, element, param) {
+      return this.optional(element) || param.test(value);
+    },
+    "Invalid format."
+  );
 
-$("#registerForm").validate({
-  rules: {
-    name: {
-      required: true,
-      pattern: /^[a-zA-Z\s]+$/,
+  $("#registerForm").validate({
+    rules: {
+      name: {
+        required: true,
+        pattern: /^[a-zA-Z\s]+$/,
+      },
+      email: {
+        required: true,
+        email: true,
+      },
+      password: {
+        required: true,
+        minlength: 6,
+        maxlength: 10,
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+      },
+      confirmPassword: {
+        required: true,
+        equalTo: "#password",
+      },
     },
-    email: {
-      required: true,
-      email: true,
+    messages: {
+      name: {
+        required: "Name is required.",
+        pattern: "Name must contain only letters and spaces.",
+      },
+      email: {
+        required: "Email is required.",
+        email: "Please enter a valid email address.",
+      },
+      password: {
+        required: "Password is required.",
+        minlength: "Password must be at least 6 char.",
+        maxlength: "Password cannot exceed 10 char.",
+        pattern: "Password must include upper, lower, num & special char",
+      },
+      confirmPassword: {
+        required: "Please confirm your password.",
+        equalTo: "Passwords do not match.",
+      },
     },
-    password: {
-      required: true,
-      minlength: 6,
-      maxlength: 10,
-      pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+    errorPlacement: function (error, element) {
+      if (element.closest(".input-group").length) {
+        error.insertAfter(element.closest(".input-group"));
+      } else {
+        error.insertAfter(element);
+      }
     },
-    confirmPassword: {
-      required: true,
-      equalTo: "#password",
+    highlight: function (element) {
+      $(element).addClass("is-invalid");
     },
-  },
-  messages: {
-    name: {
-      required: "Name is required.",
-      pattern: "Name must contain only letters and spaces.",
+    unhighlight: function (element) {
+      $(element).removeClass("is-invalid");
     },
-    email: {
-      required: "Email is required.",
-      email: "Please enter a valid email address.",
-    },
-    password: {
-      required: "Password is required.",
-      minlength: "Password must be at least 6 char.",
-      maxlength: "Password cannot exceed 10 char.",
-      pattern: "Password must include upper, lower, num & special char",
-    },
-    confirmPassword: {
-      required: "Please confirm your password.",
-      equalTo: "Passwords do not match.",
-    },
-  },
+  });
 });
 
-$("#loginForm").validate({
-  rules: {
-    email,
-    password: {
-      required: true,
+$(document).ready(function () {
+  $("#loginForm").validate({
+    rules: {
+      email: {
+        required: true,
+        email: true,
+      },
+      password: {
+        required: true,
+      },
     },
-    email: {
-      required: true,
-      email: true,
+    messages: {
+      email: {
+        required: "Email is required.",
+        email: "Please enter a valid email id.",
+      },
+      password: {
+        required: "Password is required.",
+      },
     },
-    password: {
-      required: true,
+    errorPlacement: function (error, element) {
+      if (element.closest(".input-group").length) {
+        error.insertAfter(element.closest(".input-group"));
+      } else {
+        error.insertAfter(element);
+      }
     },
-  },
-  messages: {
-    email,
-    password: {
-      required: "Email and Password are required.",
+    highlight: function (element) {
+      $(element).addClass("is-invalid");
     },
-    email: {
-      required: "Email is required.",
-      email: "Please enter a valid email address.",
+    unhighlight: function (element) {
+      $(element).removeClass("is-invalid");
     },
-    password: {
-      required: "Password is required.",
+  });
+});
+
+$(document).ready(function () {
+  $("#forgotPasswordForm").validate({
+    rules: {
+      email: {
+        required: true,
+        email: true,
+      },
     },
-  },
+    messages: {
+      email: {
+        required: "Email is required.",
+        email: "Please enter a valid email id.",
+      },
+    },
+    errorPlacement: function (error, element) {
+      if (element.closest(".input-group").length) {
+        error.insertAfter(element.closest(".input-group"));
+      } else {
+        error.insertAfter(element);
+      }
+    },
+    highlight: function (element) {
+      $(element).addClass("is-invalid");
+    },
+    unhighlight: function (element) {
+      $(element).removeClass("is-invalid");
+    },
+  });
+});
+
+$(document).ready(function () {
+  $("#resetPasswordForm").validate({
+    rules: {
+      newPassword: {
+        required: true,
+        minlength: 6,
+        maxlength: 10,
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/,
+      },
+      confirmNewPassword: {
+        required: true,
+        equalTo: "#password",
+      },
+    },
+    messages: {
+      newPassword: {
+        required: "Password is required.",
+        minlength: "Password must be at least 6 char.",
+        maxlength: "Password cannot exceed 10 char.",
+        pattern: "Password must include upper, lower, num & special char",
+      },
+      confirmNewPassword: {
+        required: "Please confirm your password.",
+        equalTo: "Passwords do not match.",
+      },
+    },
+    errorPlacement: function (error, element) {
+      if (element.closest(".input-group").length) {
+        error.insertAfter(element.closest(".input-group"));
+      } else {
+        error.insertAfter(element);
+      }
+    },
+    highlight: function (element) {
+      $(element).addClass("is-invalid");
+    },
+    unhighlight: function (element) {
+      $(element).removeClass("is-invalid");
+    },
+  });
 });

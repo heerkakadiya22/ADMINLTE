@@ -22,14 +22,24 @@
             integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
             crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+        <script src="/src/plugins/jquery/jquery.min.js"></script>
+
+        <script
+            src="/src/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+        <script src="/src/dist/js/adminlte.min.js"></script>
+
+        <script src="/src/assets/js/authjs.js"></script>
+
         <script
             src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
+        <script src="/src/assets/jquery/jquery.js"></script>
         <style>
   label.error {
     color: red;
     font-size: 14px;
-    margin-top: 5px;
+    margin-top: -10px;
     display: block;
   }
 </style>
@@ -38,7 +48,7 @@
     <body class="hold-transition register-page">
         <div class="register-box">
             <div class="register-logo">
-                <a href="/src/views/index.ejs"><b>Admin</b>LTE</a>
+                <a href="/index"><b>Admin</b>LTE</a>
             </div>
 
             <div class="card">
@@ -56,6 +66,8 @@
                         </button>
                     </div>
                     <% } %>
+
+                    <div id="clientError"></div>
 
                     <form action="/register" method="post"
                         id="registerForm" novalidate>
@@ -163,11 +175,5 @@
         </div>
         <!-- /.register-box -->
 
-        <script src="/src/plugins/jquery/jquery.min.js"></script>
-        <script
-            src="/src/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="/src/dist/js/adminlte.min.js"></script>
-        <script src="/src/assets/js/authjs.js"></script>
-        <script src="/src/assets/jquery/jquery.js"></script>
     </body>
 </html>

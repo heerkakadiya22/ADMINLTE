@@ -4,6 +4,8 @@ const authController = require("../controllers/authController");
 const {
   reValidation,
   loginValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
 } = require("../validators/authValidator");
 const { validationResult } = require("express-validator");
 const { preventbackprotect, protect } = require("../middleware/authMiddleware");
@@ -23,11 +25,14 @@ const ValidationErr = (req, res, next) => {
   next();
 };
 
+
+
 router.get("/", authController.showlogin);
 router.get("/register", preventbackprotect, authController.showregister);
 router.get("/login", preventbackprotect, authController.getlogin);
 router.post("/register", reValidation, ValidationErr, authController.register);
 router.post("/login", loginValidation, ValidationErr, authController.login);
 router.post("/logout", protect, authController.logout);
+
 
 module.exports = router;

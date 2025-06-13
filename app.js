@@ -5,6 +5,7 @@ var FileStore = require("session-file-store")(session);
 const authRoutes = require("./src/routes/authRoute");
 const path = require("path");
 const dashboardRoutes = require("./src/routes/dashboardRoute");
+const passwordRoutes = require("./src/routes/passwordRoute");
 const { preventback } = require("./src/middleware/authMiddleware");
 const { PORT, HOST } = CONFIG;
 
@@ -37,6 +38,7 @@ app.use(preventback);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(authRoutes);
 app.use(dashboardRoutes);
+app.use(passwordRoutes);
 
 //server start
 app.listen(PORT, () => {
