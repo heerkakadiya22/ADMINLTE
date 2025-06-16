@@ -54,3 +54,29 @@ exports.resetPasswordValidation = [
       return true;
     }),
 ];
+
+exports.changePasswordValidation = [
+  body(["currentPassword", "newPassword", "confirmNewPassword"])
+    .notEmpty()
+    .withMessage("All fields are required"),
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
+    .isLength({ min: 6, max: 10 })
+    .withMessage("New password must be at least 6, max 10 char.")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/)
+    .withMessage(
+      "New password must include upper, lower, number & special char"
+    ),
+  body("confirmNewPassword")
+    .notEmpty()
+    .custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error("Passwords do not match");
+      }
+      return true;
+    }),
+];

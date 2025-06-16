@@ -7,7 +7,7 @@ exports.showlogin = (req, res) => {
 
 //register controller
 exports.showregister = (req, res) => {
-  res.render("register", {
+  return res.render("register", {
     csrfToken: req.csrfToken(),
   });
 };
@@ -23,7 +23,7 @@ exports.register = (req, res) => {
         error: "Email already registered",
         csrfToken: req.csrfToken(),
         name: name,
-        email: email
+        email: email,
       });
     }
 
@@ -35,10 +35,10 @@ exports.register = (req, res) => {
           error: "Error registering admin. Please try again.",
           csrfToken: req.csrfToken(),
           name: name,
-          email: email
+          email: email,
         });
       }
-      res.redirect("/login");
+      return res.redirect("/login");
     });
   });
 };
@@ -50,7 +50,7 @@ exports.getlogin = (req, res) => {
   if (authenticated) {
     return res.redirect("/index");
   } else {
-    res.render("login", { csrfToken: req.csrfToken() });
+    return res.render("login", { csrfToken: req.csrfToken() });
   }
 };
 
@@ -79,7 +79,7 @@ exports.login = (req, res) => {
           email: email,
         });
       }
-      res.redirect("/index");
+      return res.redirect("/index");
     });
   });
 };
@@ -90,7 +90,7 @@ exports.logout = (req, res) => {
     if (err) {
       return res.status(500).send("Error logging out");
     } else {
-      res.redirect("/login");
+      return res.redirect("/login");
     }
   });
 };

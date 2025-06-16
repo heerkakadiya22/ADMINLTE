@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 //forgot password controller
 exports.showForgotPassword = (req, res) => {
-  res.render("forgot-password", { csrfToken: req.csrfToken() });
+  return res.render("forgot-password", { csrfToken: req.csrfToken() });
 };
 
 exports.forgotPassword = (req, res) => {
@@ -25,7 +25,7 @@ exports.forgotPassword = (req, res) => {
           csrfToken: req.csrfToken(),
         });
       }
-      res.redirect("/reset-password");
+      return res.redirect("/reset-password");
     });
   });
 };
@@ -35,7 +35,7 @@ exports.showResetPassword = (req, res) => {
   if (!req.session.resetEmail) {
     return res.redirect("/forgot-password");
   }
-  res.render("reset-password", { csrfToken: req.csrfToken() });
+  return res.render("reset-password", { csrfToken: req.csrfToken() });
 };
 
 exports.resetPassword = (req, res) => {
@@ -71,6 +71,71 @@ exports.resetPassword = (req, res) => {
     }
 
     req.session.resetEmail = null;
-    res.redirect("/login");
+    return res.redirect("/login");
+  });
+};
+
+// Change password controller
+
+exports.showChangePassword = (req, res) => {
+  return res.render("change-password", { csrfToken: req.csrfToken() });
+};
+
+exports.changePassword = (req, res) => {
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  const email = req.session.email;
+  if (!email) {
+    return res.redirect("/login");
+  }
+
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    return res.render("change-password", {
+      error: "All fields are required.",
+      csrfToken: req.csrfToken(),
+    });
+  }
+  if (newPassword !== confirmNewPassword) {
+    return res.render("change-password", {
+      error: "New passwords do not match.",
+      csrfToken: req.csrfToken(),
+    });
+  }
+
+  const sql = "SELECT * FROM admin WHERE email = ?";
+  db.query(sql, [email], (err, result) => {
+    if (err || result.length === 0) {
+      return res.render("change-password", {
+        error: "Email not found.",
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    const user = result[0];
+    if (user.password !== currentPassword) {
+      return res.render("change-password", {
+        error: "Current password is incorrect.",
+        csrfToken: req.csrfToken(),
+      });
+    }
+
+    const updateSql =
+      "UPDATE admin SET password = ?, confirm_password = ? WHERE email = ?";
+    db.query(
+      updateSql,
+      [newPassword, confirmNewPassword, email],
+      (err, result) => {
+        if (err || result.affectedRows === 0) {
+          return res.render("change-password", {
+            error: "Error changing password. Please try again.",
+            csrfToken: req.csrfToken(),
+          });
+        }
+
+        return res.render("change-password", {
+          success: "Password changed successfully.",
+          csrfToken: req.csrfToken(),
+        });
+      }
+    );
   });
 };
