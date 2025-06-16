@@ -11,7 +11,7 @@ $(document).ready(function () {
     rules: {
       name: {
         required: true,
-        pattern: /^[a-zA-Z\s]+$/,
+        pattern: /^[a-zA-Z]+$/,
       },
       email: {
         required: true,
@@ -31,7 +31,7 @@ $(document).ready(function () {
     messages: {
       name: {
         required: "Name is required.",
-        pattern: "Name must contain only letters and spaces.",
+        pattern: "Name must contain only letters.",
       },
       email: {
         required: "Email is required.",

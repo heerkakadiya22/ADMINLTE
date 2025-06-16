@@ -7,29 +7,35 @@ exports.showlogin = (req, res) => {
 
 //register controller
 exports.showregister = (req, res) => {
-  res.render("register", { csrfToken: req.csrfToken() });
+  res.render("register", {
+    csrfToken: req.csrfToken(),
+  });
 };
 
 exports.register = (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
 
-  //if user already exists
-  const checkuser = "SELECT * FROM user WHERE email = ?";
-  db.query(checkuser, [email], (err, result) => {
+  //if admin already exists
+  const checkadmin = "SELECT * FROM admin WHERE email = ?";
+  db.query(checkadmin, [email], (err, result) => {
     if (result.length > 0 || err) {
       return res.render("register", {
         error: "Email already registered",
         csrfToken: req.csrfToken(),
+        name: name,
+        email: email
       });
     }
 
     const sql =
-      "INSERT INTO user (name, email, password, confirm_password) VALUES (?, ?, ?, ?)";
+      "INSERT INTO admin (name, email, password, confirm_password) VALUES (?, ?, ?, ?)";
     db.query(sql, [name, email, password, confirmPassword], (err, result) => {
       if (err) {
         return res.render("register", {
-          error: "Error registering user. Please try again.",
+          error: "Error registering admin. Please try again.",
           csrfToken: req.csrfToken(),
+          name: name,
+          email: email
         });
       }
       res.redirect("/login");
@@ -50,13 +56,14 @@ exports.getlogin = (req, res) => {
 
 exports.login = (req, res) => {
   const { email, password } = req.body;
-  const sql = "SELECT * FROM user WHERE email=? AND BINARY password=?";
+  const sql = "SELECT * FROM admin WHERE email=? AND BINARY password=?";
 
   db.query(sql, [email, password], (err, result) => {
     if (err || result.length === 0) {
       return res.render("login", {
         error: "Invalid email or password.",
         csrfToken: req.csrfToken(),
+        email: email,
       });
     }
 
@@ -69,6 +76,7 @@ exports.login = (req, res) => {
         return res.render("login", {
           error: "Session error. Try again.",
           csrfToken: req.csrfToken(),
+          email: email,
         });
       }
       res.redirect("/index");

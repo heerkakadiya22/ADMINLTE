@@ -8,7 +8,7 @@ exports.showForgotPassword = (req, res) => {
 exports.forgotPassword = (req, res) => {
   const { email } = req.body;
 
-  const sql = "SELECT * FROM user WHERE email = ?";
+  const sql = "SELECT * FROM admin WHERE email = ?";
   db.query(sql, [email], (err, result) => {
     if (err || result.length === 0) {
       return res.render("forgot-password", {
@@ -61,7 +61,7 @@ exports.resetPassword = (req, res) => {
   }
 
   const sql =
-    "UPDATE user SET password = ?, confirm_password = ? WHERE email = ?";
+    "UPDATE admin SET password = ?, confirm_password = ? WHERE email = ?";
   db.query(sql, [newPassword, confirmNewPassword, email], (err, result) => {
     if (err || result.affectedRows === 0) {
       return res.render("reset-password", {

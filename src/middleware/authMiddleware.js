@@ -27,8 +27,6 @@ const preventbackprotect = (req, res, next) => {
   }
 };
 
-
-
 module.exports = {
   preventback,
   protect,
