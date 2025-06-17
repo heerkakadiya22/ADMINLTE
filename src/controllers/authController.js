@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 //login controller
 exports.showlogin = (req, res) => {
-  res.redirect("/login");
+  return res.redirect("/login");
 };
 
 //register controller
@@ -13,7 +13,7 @@ exports.showregister = (req, res) => {
 };
 
 exports.register = (req, res) => {
-  const { name, email, password, confirmPassword } = req.body;
+  const { name, email, password } = req.body;
 
   //if admin already exists
   const checkadmin = "SELECT * FROM admin WHERE email = ?";
@@ -27,9 +27,8 @@ exports.register = (req, res) => {
       });
     }
 
-    const sql =
-      "INSERT INTO admin (name, email, password, confirm_password) VALUES (?, ?, ?, ?)";
-    db.query(sql, [name, email, password, confirmPassword], (err, result) => {
+    const sql = "INSERT INTO admin (name, email, password ) VALUES (?, ?, ?)";
+    db.query(sql, [name, email, password], (err, result) => {
       if (err) {
         return res.render("register", {
           error: "Error registering admin. Please try again.",

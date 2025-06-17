@@ -60,9 +60,8 @@ exports.resetPassword = (req, res) => {
     });
   }
 
-  const sql =
-    "UPDATE admin SET password = ?, confirm_password = ? WHERE email = ?";
-  db.query(sql, [newPassword, confirmNewPassword, email], (err, result) => {
+  const sql = "UPDATE admin SET password = ? WHERE email = ?";
+  db.query(sql, [newPassword, email], (err, result) => {
     if (err || result.affectedRows === 0) {
       return res.render("reset-password", {
         error: "Error resetting password. Please try again.",
@@ -118,24 +117,19 @@ exports.changePassword = (req, res) => {
       });
     }
 
-    const updateSql =
-      "UPDATE admin SET password = ?, confirm_password = ? WHERE email = ?";
-    db.query(
-      updateSql,
-      [newPassword, confirmNewPassword, email],
-      (err, result) => {
-        if (err || result.affectedRows === 0) {
-          return res.render("change-password", {
-            error: "Error changing password. Please try again.",
-            csrfToken: req.csrfToken(),
-          });
-        }
-
+    const updateSql = "UPDATE admin SET password = ? WHERE email = ?";
+    db.query(updateSql, [newPassword, email], (err, result) => {
+      if (err || result.affectedRows === 0) {
         return res.render("change-password", {
-          success: "Password changed successfully.",
+          error: "Error changing password. Please try again.",
           csrfToken: req.csrfToken(),
         });
       }
-    );
+
+      return res.render("change-password", {
+        success: "Password changed successfully.",
+        csrfToken: req.csrfToken(),
+      });
+    });
   });
 };

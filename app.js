@@ -1,26 +1,28 @@
 const express = require("express");
 const CONFIG = require("./src/config/config");
 const session = require("express-session");
-var FileStore = require("session-file-store")(session);
-const authRoutes = require("./src/routes/authRoute");
+const FileStore = require("session-file-store")(session);
 const path = require("path");
+const csrf = require("csurf");
+
+const authRoutes = require("./src/routes/authRoute");
 const dashboardRoutes = require("./src/routes/dashboardRoute");
 const passwordRoutes = require("./src/routes/passwordRoute");
 const { preventback } = require("./src/middleware/authMiddleware");
-const { PORT, HOST } = CONFIG;
 
+const { PORT, HOST } = CONFIG;
 const app = express();
 
-//view engine
+// View engine setup
 app.set("view engine", "ejs");
 app.set("views", "./src/views");
 
+// Static files
 app.use("/src", express.static(path.join(__dirname, "src")));
+app.use(express.static(path.join(__dirname, "public")));
 
-//use session
-var fileStoreOptions = {
-  path: "./sessions",
-};
+// Session setup
+const fileStoreOptions = { path: "./sessions" };
 
 app.use(
   session({
@@ -31,16 +33,28 @@ app.use(
   })
 );
 
-//middleware
+// Body parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// CSRF middleware
+app.use(csrf());
+
+// Make csrfToken to all views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+// Custom middleware
 app.use(preventback);
-app.use(express.static(path.join(__dirname, "public")));
+
+// Routes
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(passwordRoutes);
 
-//server start
+// Server start
 app.listen(PORT, () => {
   console.log(`Server is running on http://${HOST}:${PORT}`);
 });
