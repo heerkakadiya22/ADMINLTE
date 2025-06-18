@@ -67,6 +67,7 @@
                                 <form action="/editProfile" method="POST"
                                     enctype="multipart/form-data"
                                     id="editProfileForm" novalidate>
+
                                     <input type="hidden" name="_csrf"
                                         value="<%= csrfToken %>">
 
@@ -77,6 +78,7 @@
                                             <input type="text"
                                                 class="form-control" name="name"
                                                 placeholder="Full Name"
+                                                value="<%= name %>"
                                                 required>
                                             <div class="input-group-append">
                                                 <div
@@ -93,6 +95,7 @@
                                             <input type="email"
                                                 class="form-control"
                                                 name="email" placeholder="Email"
+                                                value="<%= email %>"
                                                 required>
                                             <div class="input-group-append">
                                                 <div
