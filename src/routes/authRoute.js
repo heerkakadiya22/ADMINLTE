@@ -6,12 +6,10 @@ const {
   loginValidation,
 } = require("../validators/authValidator");
 const { validationResult } = require("express-validator");
-const {
-  preventbackprotect,
-  protect,
-  upload,
-} = require("../middleware/authMiddleware");
-const profileController = require("../controllers/profileController");
+const { preventbackprotect, protect } = require("../middleware/authMiddleware");
+const csrf = require("csurf");
+
+router.use(csrf());
 
 const ValidationErr = (req, res, next) => {
   const errors = validationResult(req);
@@ -30,12 +28,5 @@ router.get("/login", preventbackprotect, authController.getlogin);
 router.post("/register", reValidation, ValidationErr, authController.register);
 router.post("/login", loginValidation, ValidationErr, authController.login);
 router.post("/logout", protect, authController.logout);
-
-router.get("/editProfile", profileController.showEditProfile);
-router.post(
-  "/editProfile",
-  upload.single("image"),
-  profileController.updateProfile
-);
 
 module.exports = router;

@@ -8,7 +8,6 @@
   },
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@types/csurf": "^1.11.5",
     "body-parser": "^2.2.0",
@@ -22,5 +21,15 @@
     "mysql": "^2.18.1",
     "nodemon": "^3.1.10",
     "session-file-store": "^1.5.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heerkakadiya22/ADMINLTE.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/heerkakadiya22/ADMINLTE/issues"
+  },
+  "homepage": "https://github.com/heerkakadiya22/ADMINLTE#readme",
+  "description": ""
 }

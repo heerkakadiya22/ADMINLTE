@@ -7,7 +7,6 @@ const {
   changePasswordValidation,
 } = require("../validators/authValidator");
 const { validationResult } = require("express-validator");
-
 const csrf = require("csurf");
 
 router.use(csrf());
