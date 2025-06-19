@@ -37,7 +37,11 @@ const validation = (req, res, next) => {
   next();
 };
 
-router.get("/forgot-password", passwordController.showForgotPassword);
+router.get(
+  "/forgot-password",
+  csrfProtection,
+  passwordController.showForgotPassword
+);
 router.post(
   "/forgot-password",
   csrfProtection,
