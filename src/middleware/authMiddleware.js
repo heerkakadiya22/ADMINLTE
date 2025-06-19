@@ -5,7 +5,6 @@ const path = require("path");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, "../assets/image/uploads");
-
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -14,7 +13,8 @@ const storage = multer.diskStorage({
 });
 
 // Create the multer instance
-const upload = multer({ storage: storage,
+const upload = multer({
+  storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png/;
@@ -24,8 +24,8 @@ const upload = multer({ storage: storage,
     } else {
       cb("Only images allowed");
     }
-  }
- });
+  },
+});
 
 const preventback = (req, res, next) => {
   res.setHeader(
