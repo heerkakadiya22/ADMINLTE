@@ -2,10 +2,18 @@ const db = require("../config/db");
 
 //editprofile controller
 exports.showEditProfile = (req, res) => {
-  return res.render("editprofile", {
-    name: req.session.name,
-    email: req.session.email,
-    csrfToken: req.csrfToken(),
+  const id = req.session.adminId;
+  const sql = "SELECT * FROM admin WHERE id = ?";
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      return res.render("editProfile", {
+        error: "DB error",
+      });
+    }
+    return res.render("editProfile", {
+      name: req.session.name,
+      email: req.session.email,
+    });
   });
 };
 
@@ -14,11 +22,9 @@ exports.updateProfile = (req, res) => {
     req.body;
 
   const id = req.session.adminId;
-
-  if (!id) {
-    return res.redirect("/login");
-  }
-  const newimage = req.file ? req.file.filename : null;
+  const newimage = req.file
+    ? req.file.filename
+    : req.session.image || "/assets/image/uploads/profile-user.png";
 
   const updatesql =
     "UPDATE admin SET name = ?, email = ?, username = ?, image = ?, address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ? WHERE id = ?";
@@ -36,26 +42,35 @@ exports.updateProfile = (req, res) => {
     id,
   ];
 
-  req.session.name = name;
-  req.session.email = email;
-  req.session.image = newimage;
-
   db.query(updatesql, values, (err, result) => {
-    if (err || result.affectedRows === 0) {
-      return res.render("editprofile", {
+    if (err) {
+      console.error("Update SQL Error:", err); 
+      return res.render("editProfile", {
         name: req.session.name,
         email: req.session.email,
         newimage: req.session.image,
-        csrfToken: req.csrfToken(),
-        error: "Update error",
+        error: "Database update failed.",
       });
     }
 
-    return res.render("editprofile", {
+    if (result.affectedRows === 0) {
+      console.warn("Update warning: No rows affected.");
+      return res.render("editProfile", {
+        name: req.session.name,
+        email: req.session.email,
+        newimage: req.session.image,
+        error: "No changes made or user not found.",
+      });
+    }
+
+    req.session.name = name;
+    req.session.email = email;
+    req.session.image = newimage;
+
+    return res.render("editProfile", {
       name: req.session.name,
       email: req.session.email,
       newimage: req.session.image,
-      csrfToken: req.csrfToken(),
       success: "Profile updated successfully.",
     });
   });

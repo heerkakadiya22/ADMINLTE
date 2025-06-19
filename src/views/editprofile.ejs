@@ -23,9 +23,6 @@
     <body class="hold-transition sidebar-mini layout-fixed">
         <div class="wrapper">
 
-            <%- include('partials/sidebar', { name: name, csrfToken: csrfToken
-            }) %>
-
             <div class="content-wrapper">
                 <section class="content">
                     <div class="container-fluid">
@@ -67,9 +64,6 @@
                                 <form action="/editprofile" method="POST"
                                     enctype="multipart/form-data"
                                     id="editProfileForm" novalidate>
-
-                                    <input type="hidden" name="_csrf"
-                                        value="<%= csrfToken %>">
 
                                     <!-- Name -->
                                     <div class="form-group">

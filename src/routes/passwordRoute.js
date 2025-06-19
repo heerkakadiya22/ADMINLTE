@@ -8,8 +8,7 @@ const {
 } = require("../validators/authValidator");
 const { validationResult } = require("express-validator");
 const csrf = require("csurf");
-
-router.use(csrf());
+const csrfProtection = csrf();
 
 const validator = (req, res, next) => {
   const errors = validationResult(req);
@@ -41,22 +40,33 @@ const validation = (req, res, next) => {
 router.get("/forgot-password", passwordController.showForgotPassword);
 router.post(
   "/forgot-password",
+  csrfProtection,
   forgotPasswordValidation,
   validator,
   passwordController.forgotPassword
 );
-router.get("/reset-password", passwordController.showResetPassword);
+router.get(
+  "/reset-password",
+  csrfProtection,
+  passwordController.showResetPassword
+);
 router.post(
   "/reset-password",
+  csrfProtection,
   resetPasswordValidation,
   validator,
   passwordController.resetPassword
 );
 
 //change password route
-router.get("/change-password", passwordController.showChangePassword);
+router.get(
+  "/change-password",
+  csrfProtection,
+  passwordController.showChangePassword
+);
 router.post(
   "/change-password",
+  csrfProtection,
   changePasswordValidation,
   validation,
   passwordController.changePassword

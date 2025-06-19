@@ -67,7 +67,7 @@ exports.login = (req, res) => {
     }
 
     req.session.authenticated = true;
-    req.session.id = result[0].adminId;
+    req.session.adminId = result[0].id;
     req.session.name = result[0].name;
     req.session.email = result[0].email;
 
