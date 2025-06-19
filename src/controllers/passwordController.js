@@ -95,7 +95,7 @@ exports.changePassword = (req, res) => {
   }
   if (newPassword !== confirmNewPassword) {
     return res.render("change-password", {
-      error: "New passwords do not match.",
+      error: "Confirm passwords do not match.",
       csrfToken: req.csrfToken(),
     });
   }
