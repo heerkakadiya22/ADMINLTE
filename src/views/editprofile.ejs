@@ -55,6 +55,10 @@
 
     <body class="hold-transition sidebar-mini layout-fixed">
         <div class="wrapper">
+
+            <%- include('partials/sidebar', { name: name, csrfToken: csrfToken
+            }) %>
+
             <div class="content-wrapper">
                 <section class="content">
                     <div class="container-fluid">
@@ -134,16 +138,27 @@
                                             required />
                                     </div>
 
-                                    <!-- Email -->
-                                    <div class="form-group">
-                                        <label>Email</label>
-                                        <input
-                                            type="email"
-                                            class="form-control"
-                                            name="email"
-                                            placeholder="Email"
-                                            value="<%= email %>"
-                                            required />
+                                    <!-- Email and Phone in one row -->
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label>Email</label>
+                                            <input
+                                                type="email"
+                                                class="form-control"
+                                                name="email"
+                                                placeholder="Email"
+                                                value="<%= email %>"
+                                                required />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label>Phone Number</label>
+                                            <input
+                                                type="text"
+                                                class="form-control"
+                                                name="phone"
+                                                placeholder="Phone Number"
+                                                value="<%= phone %>" />
+                                        </div>
                                     </div>
 
                                     <!-- Username -->
@@ -168,78 +183,86 @@
 
                                     </div>
 
-                                    <!-- DOB -->
-                                    <div class="form-group">
-                                        <label>Date of Birth</label>
-                                        <input
-                                            type="date"
-                                            value="<%= dob %>"
-                                            class="form-control"
-                                            name="dob"
-                                            placeholder="Date of Birth" />
-                                    </div>
-
-                                    <!-- Gender -->
-                                    <div class="form-group">
-                                        <label>Gender</label><br />
-                                        <div
-                                            class="form-check form-check-inline">
+                                    <!-- DOB and Gender in one row -->
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label>Date of Birth</label>
                                             <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="gender"
-                                                value="Male"
-                                                <%=gender === 'Male' ? 'checked'
-                                                : '' %> />
-                                            <label
-                                                class="form-check-label">Male</label>
+                                                type="date"
+                                                value="<%= dob %>"
+                                                class="form-control"
+                                                name="dob"
+                                                placeholder="Date of Birth" />
                                         </div>
-                                        <div
-                                            class="form-check form-check-inline">
-                                            <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="gender"
-                                                value="Female"
-                                                <%=gender === 'Female' ?
-                                                'checked' : '' %> />
-                                            <label
-                                                class="form-check-label">Female</label>
-                                        </div>
-                                        <div
-                                            class="form-check form-check-inline">
-                                            <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="gender"
-                                                value="Other"
-                                                <%=gender === 'Other' ?
-                                                'checked' : '' %> />
-                                            <label
-                                                class="form-check-label">Other</label>
+                                        <div class="form-group col-md-6">
+                                            <label>Gender</label><br />
+                                            <div
+                                                class="form-check form-check-inline">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    name="gender"
+                                                    value="Male"
+                                                    <%=gender === 'Male' ?
+                                                    'checked' : '' %> />
+                                                <label
+                                                    class="form-check-label">Male</label>
+                                            </div>
+                                            <div
+                                                class="form-check form-check-inline">
+                                                <input
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    name="gender"
+                                                    value="Female"
+                                                    <%=gender === 'Female' ?
+                                                    'checked' : '' %> />
+                                                <label
+                                                    class="form-check-label">Female</label>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <!-- Phone -->
-                                    <div class="form-group">
-                                        <label>Phone Number</label>
-                                        <input
-                                            type="text"
-                                            class="form-control"
-                                            name="phone"
-                                            value="<%= phone %>"
-                                            placeholder="Phone Number" />
-                                    </div>
-
                                     <!-- Hobby -->
                                     <div class="form-group">
                                         <label>Hobby</label>
-                                        <input
-                                            type="text"
-                                            class="form-control"
-                                            name="hobby"
-                                            value="<%= hobby %>"
-                                            placeholder="Hobby" />
+                                        <select class="form-control"
+                                            name="hobby">
+                                            <option value>-- Select Hobby
+                                                --</option>
+                                            <option value="Singing" <%=hobby ===
+                                                'Singing' ? 'selected' : ''
+                                                %>>Singing</option>
+                                            <option value="Dancing" <%=hobby ===
+                                                'Dancing' ? 'selected' : ''
+                                                %>>Dancing</option>
+                                            <option value="Travelling" <%=hobby
+                                                === 'Travelling' ? 'selected' :
+                                                '' %>>Travelling</option>
+                                            <option value="Drawing" <%=hobby ===
+                                                'Drawing' ? 'selected' : ''
+                                                %>>Drawing</option>
+                                            <option value="Cooking" <%=hobby ===
+                                                'Cooking' ? 'selected' : ''
+                                                %>>Cooking</option>
+                                            <option value="Reading" <%=hobby ===
+                                                'Reading' ? 'selected' : ''
+                                                %>>Reading</option>
+                                            <option value="Photography" <%=hobby
+                                                === 'Photography' ? 'selected' :
+                                                '' %>>Photography</option>
+                                            <option value="Gaming" <%=hobby ===
+                                                'Gaming' ? 'selected' : ''
+                                                %>>Gaming</option>
+                                            <option value="Sports" <%=hobby ===
+                                                'Sports' ? 'selected' : ''
+                                                %>>Sports</option>
+                                            <option value="Coding" <%=hobby ===
+                                                'Coding' ? 'selected' : ''
+                                                %>>Coding</option>
+                                            <option value="Other" <%=hobby ===
+                                                'Other' ? 'selected' : ''
+                                                %>>Other</option>
+                                        </select>
                                     </div>
 
                                     <!-- Submit -->
