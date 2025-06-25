@@ -80,3 +80,77 @@ exports.changePasswordValidation = [
       return true;
     }),
 ];
+
+exports.addUserValidation = [
+  // Name
+  body("name")
+    .notEmpty()
+    .matches(/^[a-zA-Z]+$/)
+    .withMessage("Name must contain only letter"),
+
+  // Email
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email format"),
+
+  // Phone
+  body("phone")
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .matches(/^\d{10}$/)
+    .withMessage("Phone number must be 10 digits"),
+
+  // Username
+  body("username")
+    .notEmpty()
+    .withMessage("Username is required")
+    .isLength({ min: 4 })
+    .withMessage("Username must be at least 4 characters"),
+
+  // Address (optional)
+  body("address")
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage("Address must be less than 200 characters"),
+
+  // DOB
+  body("dob")
+    .notEmpty()
+    .withMessage("Date of birth is required")
+    .isISO8601()
+    .withMessage("Invalid date format"),
+
+  // Gender
+  body("gender")
+    .notEmpty()
+    .withMessage("Gender is required")
+    .isIn(["Male", "Female"])
+    .withMessage("Gender must be Male or Female"),
+
+  // Hobby
+  body("hobby").notEmpty().withMessage("Hobby is required"),
+
+  // Password
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 6, max: 10 })
+    .withMessage("Password must be between 6 and 10 characters")
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
+    .withMessage(
+      "Password must include uppercase, lowercase, number, and special character"
+    ),
+
+  // Confirm Password
+  body("confirm_password")
+    .notEmpty()
+    .withMessage("Confirm Password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Passwords do not match");
+      }
+      return true;
+    }),
+];

@@ -26,14 +26,18 @@ exports.showEditProfile = (req, res) => {
 
     const user = result[0];
 
-    // Format DOB to YYYY-MM-DD if it exists
-    const formattedDob = user.dob
-      ? new Date(user.dob.getTime() - user.dob.getTimezoneOffset() * 60000)
-          .toISOString()
-          .split("T")[0]
-      : "";
+    let formattedDob = "";
+    if (user.dob) {
+      const parsedDob = new Date(user.dob);
+      if (!isNaN(parsedDob)) {
+        // Adjust for local timezone offset
+        const offsetDate = new Date(
+          parsedDob.getTime() - parsedDob.getTimezoneOffset() * 60000
+        );
+        formattedDob = offsetDate.toISOString().split("T")[0];
+      }
+    }
 
-    // Build full image path
     const imagePath =
       "/src/assets/image/uploads/" + (user.image || "profile-user.png");
 

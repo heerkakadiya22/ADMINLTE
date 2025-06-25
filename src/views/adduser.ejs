@@ -6,6 +6,8 @@
         <title>AdminLTE | Edit Profile</title>
         <%- include('partials/head') %>
 
+        <script src="/src/assets/jquery/jquery.js"></script>
+
         <style>
       .edit-profile-card {
         max-width: 700px;
@@ -64,14 +66,16 @@
                     <div class="container-fluid">
                         <div class="row mb-2">
                             <div class="col-sm-6">
-                                <h1>Profile</h1>
+                                <h1>Add User</h1>
                             </div>
                             <div class="col-sm-6">
                                 <ol class="breadcrumb float-sm-right">
                                     <li class="breadcrumb-item"><a
                                             href="#">Home</a></li>
-                                    <li class="breadcrumb-item active">User
-                                        Profile</li>
+                                    <li class="breadcrumb-item active">Manage
+                                        User</li>
+                                    <li class="breadcrumb-item active">add
+                                        User</li>
                                 </ol>
                             </div>
                         </div>
@@ -81,45 +85,9 @@
                     <div class="container-fluid">
                         <div class="row">
 
-                            <!-- Profile Card (Left) -->
-                            <div class="col-md-3">
-                                <div class="card card-primary card-outline">
-                                    <div class="card-body box-profile">
-                                        <div class="text-center">
-                                            <img
-                                                class="profile-user-img img-fluid img-circle"
-                                                src="<%= image %>"
-                                                alt="User profile picture">
-                                        </div>
-                                        <h3
-                                            class="profile-username text-center"><%=
-                                            name %></h3>
-                                        <p
-                                            class="text-muted text-center">Software
-                                            Engineer</p>
-                                        <ul
-                                            class="list-group list-group-unbordered mb-3">
-                                            <li class="list-group-item">
-                                                <b>Followers</b> <a
-                                                    class="float-right">1,322</a>
-                                            </li>
-                                            <li class="list-group-item">
-                                                <b>Following</b> <a
-                                                    class="float-right">543</a>
-                                            </li>
-                                            <li class="list-group-item">
-                                                <b>Friends</b> <a
-                                                    class="float-right">13,287</a>
-                                            </li>
-                                        </ul>
-                                        <a href="#"
-                                            class="btn btn-primary btn-block"><b>Follow</b></a>
-                                    </div>
-                                </div>
-                            </div>
-
+                            <div class="col-md-2"></div>
                             <!-- Profile Edit Form (Right) -->
-                            <div class="col-md-9">
+                            <div class="col-md-8">
                                 <div class="card">
                                     <div class="card-body">
                                         <% if (typeof error !== 'undefined' &&
@@ -152,14 +120,17 @@
                                         </div>
                                         <% } %>
 
-                                        <form action="/editprofile"
-                                            method="POST"
+                                        <div id="clientError"></div>
+
+                                        <form action="/adduser" method="POST"
                                             enctype="multipart/form-data"
-                                            id="editProfileForm" novalidate>
+                                            id="adduser">
+
                                             <div class="text-center mb-4">
                                                 <div
                                                     class="profile-image-wrapper">
-                                                    <img src="<%= image %>"
+                                                    <img
+                                                        src="/src/assets/image/uploads/profile-user.png"
                                                         alt="User Avatar"
                                                         id="previewImg" />
                                                     <label for="imageUpload">
@@ -179,9 +150,7 @@
                                                 <input type="text"
                                                     class="form-control"
                                                     name="name"
-                                                    placeholder="Full Name"
-                                                    value="<%= name %>"
-                                                    required />
+                                                    placeholder="Full Name" />
                                             </div>
 
                                             <!-- Email & Phone -->
@@ -192,9 +161,7 @@
                                                     <input type="email"
                                                         class="form-control"
                                                         name="email"
-                                                        placeholder="Email"
-                                                        value="<%= email %>"
-                                                        required />
+                                                        placeholder="Email" />
                                                 </div>
                                                 <div
                                                     class="form-group col-md-6">
@@ -202,8 +169,7 @@
                                                     <input type="text"
                                                         class="form-control"
                                                         name="phone"
-                                                        placeholder="Phone Number"
-                                                        value="<%= phone %>" />
+                                                        placeholder="Phone Number" />
                                                 </div>
                                             </div>
 
@@ -213,9 +179,7 @@
                                                 <input type="text"
                                                     class="form-control"
                                                     name="username"
-                                                    placeholder="Username"
-                                                    value="<%= username %>"
-                                                    required />
+                                                    placeholder="Username" />
                                             </div>
 
                                             <!-- Address -->
@@ -223,7 +187,7 @@
                                                 <label>Address</label>
                                                 <textarea name="address"
                                                     class="form-control"
-                                                    placeholder="Address"><%= address %></textarea>
+                                                    placeholder="Address"></textarea>
                                             </div>
 
                                             <!-- DOB & Gender -->
@@ -232,7 +196,6 @@
                                                     class="form-group col-md-6">
                                                     <label>Date of Birth</label>
                                                     <input type="date"
-                                                        value="<%= dob %>"
                                                         class="form-control"
                                                         name="dob"
                                                         placeholder="Date of Birth" />
@@ -246,10 +209,7 @@
                                                             class="form-check-input"
                                                             type="radio"
                                                             name="gender"
-                                                            value="Male"
-                                                            <%=gender === 'Male'
-                                                            ? 'checked' : '' %>
-                                                        />
+                                                            value="Male" />
                                                         <label
                                                             class="form-check-label">Male</label>
                                                     </div>
@@ -259,10 +219,7 @@
                                                             class="form-check-input"
                                                             type="radio"
                                                             name="gender"
-                                                            value="Female"
-                                                            <%=gender ===
-                                                            'Female' ? 'checked'
-                                                            : '' %> />
+                                                            value="Female" />
                                                         <label
                                                             class="form-check-label">Female</label>
                                                     </div>
@@ -276,53 +233,39 @@
                                                     name="hobby">
                                                     <option value>-- Select
                                                         Hobby --</option>
-                                                    <option value="Singing"
-                                                        <%=hobby === 'Singing' ?
-                                                        'selected' : ''
-                                                        %>>Singing</option>
-                                                    <option value="Dancing"
-                                                        <%=hobby === 'Dancing' ?
-                                                        'selected' : ''
-                                                        %>>Dancing</option>
-                                                    <option value="Travelling"
-                                                        <%=hobby ===
-                                                        'Travelling' ?
-                                                        'selected' : ''
-                                                        %>>Travelling</option>
-                                                    <option value="Drawing"
-                                                        <%=hobby === 'Drawing' ?
-                                                        'selected' : ''
-                                                        %>>Drawing</option>
-                                                    <option value="Cooking"
-                                                        <%=hobby === 'Cooking' ?
-                                                        'selected' : ''
-                                                        %>>Cooking</option>
-                                                    <option value="Reading"
-                                                        <%=hobby === 'Reading' ?
-                                                        'selected' : ''
-                                                        %>>Reading</option>
-                                                    <option value="Photography"
-                                                        <%=hobby ===
-                                                        'Photography' ?
-                                                        'selected' : ''
-                                                        %>>Photography</option>
-                                                    <option value="Gaming"
-                                                        <%=hobby === 'Gaming' ?
-                                                        'selected' : ''
-                                                        %>>Gaming</option>
-                                                    <option value="Sports"
-                                                        <%=hobby === 'Sports' ?
-                                                        'selected' : ''
-                                                        %>>Sports</option>
-                                                    <option value="Coding"
-                                                        <%=hobby === 'Coding' ?
-                                                        'selected' : ''
-                                                        %>>Coding</option>
-                                                    <option value="Other"
-                                                        <%=hobby === 'Other' ?
-                                                        'selected' : ''
-                                                        %>>Other</option>
+                                                    <option>Singing</option>
+                                                    <option>Dancing</option>
+                                                    <option>Travelling</option>
+                                                    <option>Drawing</option>
+                                                    <option>Cooking</option>
+                                                    <option>Reading</option>
+                                                    <option>Photography</option>
+                                                    <option>Gaming</option>
+                                                    <option>Sports</option>
+                                                    <option>Coding</option>
+                                                    <option>Other</option>
                                                 </select>
+                                            </div>
+
+                                            <div class="form-row">
+                                                <div
+                                                    class="form-group col-md-6">
+                                                    <label>Password</label>
+                                                    <input type="password"
+                                                        name="password"
+                                                        class="form-control"
+                                                        placeholder="password" />
+                                                </div>
+
+                                                <div
+                                                    class="form-group col-md-6">
+                                                    <label>Confirm
+                                                        Password</label>
+                                                    <input type="password"
+                                                        name="confirm_password"
+                                                        class="form-control"
+                                                        placeholder="confirm password" />
+                                                </div>
                                             </div>
 
                                             <!-- Submit -->
@@ -335,14 +278,13 @@
                                         </form>
 
                                         <div class="text-center mt-2">
-                                            <a href="/index"
-                                                class="text-muted">← Back to
-                                                Home</a>
+                                            <a href="/manageuser"
+                                                class="text-muted">← Go Back
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </section>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>AdminLTE | Manage Users</title>
+        <%- include('partials/head') %>
+    </head>
+
+    <body class="hold-transition sidebar-mini">
+        <div class="wrapper">
+            <%- include('partials/sidebar', { name: name, image: image,
+            csrfToken: csrfToken }) %>
+
+            <!-- Content Wrapper. Contains page content -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <div class="container-fluid">
+                        <div class="row mb-2">
+                            <div class="col-sm-6">
+                                <h1>Manage Users</h1>
+                            </div>
+                            <div class="col-sm-6">
+                                <ol class="breadcrumb float-sm-right">
+                                    <li class="breadcrumb-item"><a
+                                            href="#">Home</a></li>
+                                    <li class="breadcrumb-item active">Manage
+                                        Users</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Main content -->
+                <section class="content">
+                    <div class="card">
+                        <div class="card-header">
+
+                            <h3 class="card-title">All Registered Users</h3>
+                            <div class="card-tools">
+                                <a href="/adduser"
+                                    class="btn btn-primary btn-sm">
+                                    <i class="fas fa-user-plus"></i> Add User
+                                </a>
+                                <button type="button" class="btn btn-tool"
+                                    data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-0">
+                            <table class="table table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Profile</th>
+                                        <th>Email / Phone</th>
+                                        <th>Username</th>
+                                        <th>Address</th>
+                                        <th>DOB / Gender</th>
+                                        <th>Hobby</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (user && user.length > 0) { %>
+                                    <% user.forEach((user, index) => { %>
+                                    <tr>
+                                        <td><%= index + 1 %></td>
+                                        <td>
+                                            <div
+                                                class="d-flex align-items-center">
+                                                <img
+                                                    src="/src/assets/image/uploads/<%= user.image %>"
+                                                    class="img-circle elevation-2"
+                                                    style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;">
+                                                <div>
+                                                    <strong><%= user.name
+                                                        %></strong><br />
+                                                    <small><%= user.id ? 'ID: '
+                                                        + user.id : ''
+                                                        %></small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <strong><%= user.email
+                                                %></strong><br />
+                                            <small><%= user.phone_no || 'N/A'
+                                                %></small>
+                                        </td>
+                                        <td><%= user.username || 'N/A' %></td>
+                                        <td><%= user.address || 'N/A' %></td>
+                                        <td>
+                                            <%= user.dob ? new
+                                            Date(user.dob).toLocaleDateString()
+                                            : 'N/A' %><br />
+                                            <%= user.gender || 'N/A' %>
+                                        </td>
+                                        <td><%= user.hobby || 'N/A' %></td>
+                                        <td>
+                                            <a class="btn btn-info btn-sm"
+                                                href="/editprofile/<%= user.id %>">
+                                                <i
+                                                    class="fas fa-pencil-alt"></i>
+                                                Edit
+                                            </a>
+                                            <a class="btn btn-danger btn-sm"
+                                                href="/deleteuser/<%= user.id %>">
+                                                <i class="fas fa-trash"></i>
+                                                Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                    <% } else { %>
+                                    <tr>
+                                        <td colspan="8"
+                                            class="text-center text-muted">No
+                                            users found.</td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <%- include('partials/scripts') %>
+    </body>
+</html>
