@@ -1,10 +1,9 @@
 const path = require("path");
 const db = require("../config/db");
 
-// GET: Show profile edit form
+// GET: Show edit profile
 exports.showEditProfile = (req, res) => {
   const id = req.session.adminId;
-
   const sql = "SELECT * FROM admin WHERE id = ?";
   db.query(sql, [id], (err, result) => {
     if (err || result.length === 0) {
@@ -16,7 +15,7 @@ exports.showEditProfile = (req, res) => {
         dob: "",
         gender: "",
         phone: "",
-        hobby: "",
+        hobby: [],
         image: "/src/assets/image/uploads/profile-user.png",
         error: "DB error or user not found",
         success: null,
@@ -25,47 +24,39 @@ exports.showEditProfile = (req, res) => {
     }
 
     const user = result[0];
+    const dobFormatted = user.dob
+      ? new Date(
+          new Date(user.dob).getTime() -
+            new Date(user.dob).getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .split("T")[0]
+      : "";
 
-    let formattedDob = "";
-    if (user.dob) {
-      const parsedDob = new Date(user.dob);
-      if (!isNaN(parsedDob)) {
-        // Adjust for local timezone offset
-        const offsetDate = new Date(
-          parsedDob.getTime() - parsedDob.getTimezoneOffset() * 60000
-        );
-        formattedDob = offsetDate.toISOString().split("T")[0];
-      }
-    }
-
-    const imagePath =
-      "/src/assets/image/uploads/" + (user.image || "profile-user.png");
-
-    const successMsg = req.session.successMsg || null;
-    delete req.session.successMsg;
+    const hobbyArray = user.hobby ? user.hobby.split(",") : [];
 
     res.render("editProfile", {
       name: user.name,
       email: user.email,
       username: user.username,
       address: user.address,
-      dob: formattedDob,
+      dob: dobFormatted,
       gender: user.gender,
       phone: user.phone_no,
-      hobby: user.hobby,
-      image: imagePath,
-      success: successMsg,
+      hobby: hobbyArray,
+      image: "/src/assets/image/uploads/" + (user.image || "profile-user.png"),
       error: null,
+      success: req.session.successMsg || null,
       csrfToken: req.csrfToken(),
     });
+
+    req.session.successMsg = null;
   });
 };
 
 // POST: Update profile
 exports.updateProfile = (req, res) => {
-  const { name, email, username, address, dob, gender, phone, hobby } =
-    req.body;
-
+  let { name, email, username, address, dob, gender, phone, hobby } = req.body;
   const id = req.session.adminId;
   const newImage = req.file ? req.file.filename : null;
 
@@ -80,7 +71,7 @@ exports.updateProfile = (req, res) => {
         dob,
         gender,
         phone,
-        hobby,
+        hobby: Array.isArray(hobby) ? hobby : hobby ? [hobby] : [],
         image: "/src/assets/image/uploads/profile-user.png",
         error: "Failed to fetch existing image.",
         success: null,
@@ -90,12 +81,17 @@ exports.updateProfile = (req, res) => {
     const currentImage = result[0].image || "profile-user.png";
     const imageToUse = newImage || currentImage;
 
+    if (!hobby) hobby = [];
+    else if (!Array.isArray(hobby)) hobby = [hobby];
+
+    const hobbyString = hobby.join(",");
+
     const sql = `
-    UPDATE admin SET 
-      name = ?, email = ?, username = ?, image = ?, 
-      address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
-    WHERE id = ?
-  `;
+      UPDATE admin SET 
+        name = ?, email = ?, username = ?, image = ?, 
+        address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
+      WHERE id = ?
+    `;
 
     const values = [
       name,
@@ -106,13 +102,12 @@ exports.updateProfile = (req, res) => {
       dob,
       gender,
       phone,
-      hobby,
+      hobbyString,
       id,
     ];
 
     db.query(sql, values, (err, result) => {
       if (err || result.affectedRows === 0) {
-        const imagePath = "/src/assets/image/uploads/" + image;
         return res.render("editProfile", {
           name,
           email,

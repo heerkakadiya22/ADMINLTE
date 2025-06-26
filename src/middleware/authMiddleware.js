@@ -1,7 +1,7 @@
 const multer = require("multer");
 const path = require("path");
 
-// Set up storage for uploaded files
+// Multer storage config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, "../assets/image/uploads");
@@ -12,17 +12,22 @@ const storage = multer.diskStorage({
   },
 });
 
-// Create the multer instance
+// Updated file filter with mimetype check
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png/;
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.test(ext)) {
-      cb(null, true);
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = filetypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
     } else {
-      cb("Only images allowed");
+      const error = new Error("Only images allowed (jpeg, jpg, png, gif)");
+      error.code = "INVALID_FILETYPE";
+      return cb(error);
     }
   },
 });

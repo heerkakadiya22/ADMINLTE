@@ -3,63 +3,59 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>AdminLTE | Edit Profile</title>
+        <title>AdminLTE | Add User</title>
         <%- include('partials/head') %>
 
-        <script src="/src/assets/jquery/jquery.js"></script>
+        <!-- FontAwesome -->
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+        <!-- Styles -->
         <style>
-      .edit-profile-card {
-        max-width: 700px;
-        margin: 50px auto;
-      }
-
-      label.error {
-        color: red;
-        font-size: 14px;
-        margin-top: -8px;
-        display: block;
-      }
-
-      .profile-image-wrapper {
-        position: relative;
-        display: inline-block;
-      }
-
-      .profile-image-wrapper img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 3px solid #007bff;
-      }
-
-      .profile-image-wrapper label {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        background-color: #007bff;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border: 2px solid #fff;
-      }
-
-      .profile-image-wrapper input[type="file"] {
-        display: none;
-      }
-    </style>
+    .edit-profile-card { max-width: 700px; margin: 50px auto; }
+    label.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  display: block;
+}
+    .profile-image-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .profile-image-wrapper img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #007bff;
+    }
+    .profile-image-wrapper label {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background-color: #007bff;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+    .profile-image-wrapper input[type="file"] { display: none; }
+   </style>
     </head>
 
     <body class="hold-transition sidebar-mini layout-fixed">
         <div class="wrapper">
 
             <%- include('partials/sidebar', { name: name, csrfToken: csrfToken
-            }) %>
+            || '' }) %>
 
             <div class="content-wrapper">
                 <section class="content-header">
@@ -74,22 +70,21 @@
                                             href="#">Home</a></li>
                                     <li class="breadcrumb-item active">Manage
                                         User</li>
-                                    <li class="breadcrumb-item active">add
+                                    <li class="breadcrumb-item active">Add
                                         User</li>
                                 </ol>
                             </div>
                         </div>
-                    </div><!-- /.container-fluid -->
+                    </div>
                 </section>
+
                 <section class="content">
                     <div class="container-fluid">
-                        <div class="row">
-
-                            <div class="col-md-2"></div>
-                            <!-- Profile Edit Form (Right) -->
+                        <div class="row justify-content-center">
                             <div class="col-md-8">
                                 <div class="card">
                                     <div class="card-body">
+
                                         <% if (typeof error !== 'undefined' &&
                                         error) { %>
                                         <div
@@ -120,12 +115,9 @@
                                         </div>
                                         <% } %>
 
-                                        <div id="clientError"></div>
-
                                         <form action="/adduser" method="POST"
                                             enctype="multipart/form-data"
                                             id="adduser">
-
                                             <div class="text-center mb-4">
                                                 <div
                                                     class="profile-image-wrapper">
@@ -133,10 +125,8 @@
                                                         src="/src/assets/image/uploads/profile-user.png"
                                                         alt="User Avatar"
                                                         id="previewImg" />
-                                                    <label for="imageUpload">
-                                                        <i
-                                                            class="fas fa-camera text-white"></i>
-                                                    </label>
+                                                    <label for="imageUpload"><i
+                                                            class="fas fa-camera text-white"></i></label>
                                                     <input type="file"
                                                         id="imageUpload"
                                                         name="image"
@@ -247,41 +237,69 @@
                                                 </select>
                                             </div>
 
+                                            <!-- Passwords -->
                                             <div class="form-row">
                                                 <div
                                                     class="form-group col-md-6">
                                                     <label>Password</label>
-                                                    <input type="password"
-                                                        name="password"
-                                                        class="form-control"
-                                                        placeholder="password" />
+                                                    <div class="input-group">
+                                                        <input type="password"
+                                                            class="form-control"
+                                                            name="password"
+                                                            id="password"
+                                                            placeholder="Password" />
+                                                        <div
+                                                            class="input-group-append">
+                                                            <span
+                                                                class="input-group-text"
+                                                                style="cursor: pointer;"
+                                                                onclick="togglePassword('password', 'eyeIcon1')">
+                                                                <i id="eyeIcon1"
+                                                                    class="fa-solid fa-eye"></i>
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
                                                 <div
                                                     class="form-group col-md-6">
                                                     <label>Confirm
                                                         Password</label>
-                                                    <input type="password"
-                                                        name="confirm_password"
-                                                        class="form-control"
-                                                        placeholder="confirm password" />
+                                                    <div class="input-group">
+                                                        <input type="password"
+                                                            class="form-control"
+                                                            name="confirmPassword"
+                                                            id="confirmPassword"
+                                                            placeholder="Retype Password" />
+                                                        <div
+                                                            class="input-group-append">
+                                                            <span
+                                                                class="input-group-text"
+                                                                style="cursor: pointer;"
+                                                                onclick="togglePassword('confirmPassword', 'eyeIcon2')">
+                                                                <i id="eyeIcon2"
+                                                                    class="fa-solid fa-eye"></i>
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
+
                                             </div>
 
                                             <!-- Submit -->
                                             <div
                                                 class="form-group text-center mt-4">
                                                 <button type="submit"
-                                                    class="btn btn-success btn-lg w-100">Save
-                                                    Changes</button>
+                                                    class="btn btn-success btn-lg w-100">Add
+                                                    User</button>
                                             </div>
                                         </form>
 
                                         <div class="text-center mt-2">
                                             <a href="/manageuser"
-                                                class="text-muted">← Go Back
-                                            </a>
+                                                class="text-muted">← Go Back</a>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -291,16 +309,137 @@
             </div>
         </div>
 
+        <!-- Common Scripts -->
         <%- include('partials/scripts') %>
 
-        <!-- JS to preview selected image -->
+        <!-- ✅ jQuery Validate -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
         <script>
-      document.getElementById("imageUpload").addEventListener("change", function (e) {
-        const img = document.getElementById("previewImg");
-        if (e.target.files && e.target.files[0]) {
-          img.src = URL.createObjectURL(e.target.files[0]);
-        }
-      });
-    </script>
+  // Custom pattern rule
+  $.validator.addMethod("pattern", function (value, element, param) {
+    if (this.optional(element)) return true;
+    if (typeof param === "string") {
+      param = new RegExp(param);
+    }
+    return param.test(value);
+  }, "Invalid format.");
+
+  $(function () {
+    $("#adduser").validate({
+      rules: {
+        name: {
+          required: true,
+          pattern: "^[a-zA-Z]+$",
+        },
+        email: {
+          required: true,
+          email: true,
+        },
+        phone: {
+          required: true,
+          digits: true,
+          maxlength: 10,
+        },
+        address: {
+          required: true,
+        },
+        username: {
+          required: true,
+        },
+        password: {
+          required: true,
+          minlength: 6,
+          maxlength: 10,
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).+$",
+        },
+        confirmPassword: {
+          required: true,
+          equalTo: "#password",
+        },
+        dob: {
+          required: true,
+        },
+        gender: {
+          required: true,
+        },
+        hobby: {
+          required: true,
+        },
+      },
+      messages: {
+        name: {
+          required: "Name is required.",
+          pattern: "Name must contain only letters.",
+        },
+        email: {
+          required: "Email is required.",
+          email: "Enter a valid email address.",
+        },
+        phone: {
+          required: "Phone is required.",
+          digits: "Only digits allowed.",
+          maxlength: "Phone cannot exceed 10 digits.",
+        },
+        address: {
+          required: "Address is required.",
+        },
+        username: {
+          required: "Username is required.",
+        },
+        password: {
+          required: "Password is required.",
+          minlength: "Minimum 6 characters.",
+          maxlength: "Maximum 10 characters.",
+          pattern: "Include upper, lower, digit, and special character.",
+        },
+        confirmPassword: {
+          required: "Please confirm your password.",
+          equalTo: "Passwords do not match.",
+        },
+        dob: {
+          required: "Date of birth is required.",
+        },
+        gender: {
+          required: "Please select gender.",
+        },
+        hobby: {
+          required: "Please select hobby.",
+        },
+      },
+      errorElement: "label",
+      errorClass: "error",
+      highlight: function (element) {
+        $(element).addClass("is-invalid");
+      },
+      unhighlight: function (element) {
+        $(element).removeClass("is-invalid");
+      },
+      errorPlacement: function (error, element) {
+  if (element.attr("name") === "gender") {
+    // Append error after the last radio button inside the same form-group
+    element.closest('.form-group').find('.form-check').last().after(error);
+  } else if (element.closest(".input-group").length > 0) {
+    error.insertAfter(element.closest(".input-group"));
+  } else {
+    error.insertAfter(element);
+  }
+}
+    });
+  });
+</script>
+
+        <!-- ✅ Validation Script -->
+        <script src="/src/assets/js/authjs.js"></script>
+        <script>
+  // Image Preview
+  document.getElementById("imageUpload").addEventListener("change", function (e) {
+    const img = document.getElementById("previewImg");
+    if (e.target.files && e.target.files[0]) {
+      img.src = URL.createObjectURL(e.target.files[0]);
+    }
+  });
+</script>
     </body>
 </html>

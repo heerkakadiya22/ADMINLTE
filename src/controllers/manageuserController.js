@@ -26,34 +26,27 @@ exports.getalluser = (req, res) => {
   });
 };
 
-// Show form
-exports.showAddUser = (req, res) => {
+exports.showadduser = (req, res) => {
   const id = req.session.adminId;
 
   const sql = "SELECT * FROM admin WHERE id = ?";
   db.query(sql, [id], (err, result) => {
     if (err || result.length === 0) {
-      return res.render("adduser", {
-        csrfToken: req.csrfToken(),
-        name: "",
-        image: "/src/assets/image/uploads/profile-user.png",
-        error: "DB error or user not found",
-      });
+      return res.redirect("/login");
     }
-
     const user = result[0];
-    const imagePath =
-      "/src/assets/image/uploads/" + (user.image || "profile-user.png");
+    const imagePath = user.image
+      ? "/src/assets/image/uploads/" + user.image
+      : "/src/assets/image/uploads/profile-user.png";
 
-    res.render("adduser", {
+    return res.render("adduser", {
       csrfToken: req.csrfToken(),
       name: user.name,
       image: imagePath,
     });
   });
 };
-
-exports.insertUser = (req, res) => {
+exports.insertuser = (req, res) => {
   const {
     name,
     email,
@@ -64,53 +57,53 @@ exports.insertUser = (req, res) => {
     gender,
     hobby,
     password,
-    confirm_password,
+    confirmPassword,
   } = req.body;
 
-  if (password !== confirm_password) {
+  if (password !== confirmPassword) {
     return res.render("adduser", {
-      error: "Passwords do not match.",
-      success: null,
-      name: req.session.name || "",
+      error: "Passwords do not match",
+      name: req.session.adminName,
+      image:
+        req.session.adminImage || "/src/assets/image/uploads/profile-user.png",
+      csrfToken: "",
     });
   }
 
-  let imagePath = "/src/assets/image/uploads/profile-user.png";
-  if (req.file) {
-    imagePath = "/src/assets/image/uploads/" + req.file.filename;
-  }
+  const image = req.file ? req.file.filename : "profile-user.png";
 
-  const insertQuery = `
-    INSERT INTO admin (name, email, phone, username, address, dob, gender, hobby, password, image)
+  const insertSql = `
+    INSERT INTO user (name, email, password, username, image, phone_no, address, hobby, dob, gender)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
     name,
     email,
-    phone,
+    password,
     username,
+    image,
+    phone,
     address,
+    hobby,
     dob,
     gender,
-    hobby,
-    password,
-    imagePath,
   ];
 
-  db.query(insertQuery, values, (err, result) => {
+  db.query(insertSql, values, (err, result) => {
     if (err) {
-      console.error("Insert Error:", err);
+      console.error(err);
       return res.render("adduser", {
-        error: "Something went wrong while adding the user.",
-        success: null,
-        name: req.session.name || "",
+        error: "Failed to add user.",
+        name: req.session.adminName,
+        image:
+          req.session.adminImage ||
+          "/src/assets/image/uploads/profile-user.png",
+        csrfToken: "",
       });
     }
-    return res.render("adduser", {
-      success: `${name} added successfully.`,
-      error: null,
-      name: req.session.name || "",
-    });
+
+    req.session.success = "User added successfully!";
+    return res.redirect("adduser");
   });
 };
