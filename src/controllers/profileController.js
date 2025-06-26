@@ -24,14 +24,17 @@ exports.showEditProfile = (req, res) => {
     }
 
     const user = result[0];
-    const dobFormatted = user.dob
-      ? new Date(
-          new Date(user.dob).getTime() -
-            new Date(user.dob).getTimezoneOffset() * 60000
+    let dobFormatted = "";
+    if (user.dob) {
+      const parsedDate = new Date(user.dob);
+      if (!isNaN(parsedDate)) {
+        dobFormatted = new Date(
+          parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000
         )
           .toISOString()
-          .split("T")[0]
-      : "";
+          .split("T")[0];
+      }
+    }
 
     const hobbyArray = user.hobby ? user.hobby.split(",") : [];
 
