@@ -144,7 +144,7 @@ exports.addUserValidation = [
     ),
 
   // Confirm Password
-  body("confirm_password")
+  body("confirmPassword")
     .notEmpty()
     .withMessage("Confirm Password is required")
     .custom((value, { req }) => {

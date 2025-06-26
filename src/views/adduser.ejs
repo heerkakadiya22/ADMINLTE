@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>AdminLTE | Add User</title>
-        <%- include('partials/head') %>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AdminLTE | Add User</title>
+    <%- include('partials/head') %>
 
-        <!-- FontAwesome -->
-        <link rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-            integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-            crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-        <!-- Styles -->
-        <style>
+    <!-- Styles -->
+    <style>
     .edit-profile-card { max-width: 700px; margin: 50px auto; }
     label.error {
   color: red;
@@ -49,274 +49,273 @@
     }
     .profile-image-wrapper input[type="file"] { display: none; }
    </style>
-    </head>
+  </head>
 
-    <body class="hold-transition sidebar-mini layout-fixed">
-        <div class="wrapper">
+  <body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
 
-            <%- include('partials/sidebar', { name: name, csrfToken: csrfToken
-            || '' }) %>
+      <%- include('partials/sidebar', { name: name, csrfToken: csrfToken
+      || '' }) %>
 
-            <div class="content-wrapper">
-                <section class="content-header">
-                    <div class="container-fluid">
-                        <div class="row mb-2">
-                            <div class="col-sm-6">
-                                <h1>Add User</h1>
-                            </div>
-                            <div class="col-sm-6">
-                                <ol class="breadcrumb float-sm-right">
-                                    <li class="breadcrumb-item"><a
-                                            href="#">Home</a></li>
-                                    <li class="breadcrumb-item active">Manage
-                                        User</li>
-                                    <li class="breadcrumb-item active">Add
-                                        User</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="content">
-                    <div class="container-fluid">
-                        <div class="row justify-content-center">
-                            <div class="col-md-8">
-                                <div class="card">
-                                    <div class="card-body">
-
-                                        <% if (typeof error !== 'undefined' &&
-                                        error) { %>
-                                        <div
-                                            class="alert alert-danger alert-dismissible fade show"
-                                            role="alert">
-                                            <%= error %>
-                                            <button type="button" class="close"
-                                                data-dismiss="alert"
-                                                aria-label="Close">
-                                                <span
-                                                    aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <% } %>
-
-                                        <% if (typeof success !== 'undefined' &&
-                                        success) { %>
-                                        <div
-                                            class="alert alert-success alert-dismissible fade show"
-                                            role="alert">
-                                            <%= success %>
-                                            <button type="button" class="close"
-                                                data-dismiss="alert"
-                                                aria-label="Close">
-                                                <span
-                                                    aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <% } %>
-
-                                        <form action="/adduser" method="POST"
-                                            enctype="multipart/form-data"
-                                            id="adduser">
-                                            <div class="text-center mb-4">
-                                                <div
-                                                    class="profile-image-wrapper">
-                                                    <img
-                                                        src="/src/assets/image/uploads/profile-user.png"
-                                                        alt="User Avatar"
-                                                        id="previewImg" />
-                                                    <label for="imageUpload"><i
-                                                            class="fas fa-camera text-white"></i></label>
-                                                    <input type="file"
-                                                        id="imageUpload"
-                                                        name="image"
-                                                        accept="image/*" />
-                                                </div>
-                                            </div>
-
-                                            <!-- Name -->
-                                            <div class="form-group">
-                                                <label>Full Name</label>
-                                                <input type="text"
-                                                    class="form-control"
-                                                    name="name"
-                                                    placeholder="Full Name" />
-                                            </div>
-
-                                            <!-- Email & Phone -->
-                                            <div class="form-row">
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Email</label>
-                                                    <input type="email"
-                                                        class="form-control"
-                                                        name="email"
-                                                        placeholder="Email" />
-                                                </div>
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Phone Number</label>
-                                                    <input type="text"
-                                                        class="form-control"
-                                                        name="phone"
-                                                        placeholder="Phone Number" />
-                                                </div>
-                                            </div>
-
-                                            <!-- Username -->
-                                            <div class="form-group">
-                                                <label>Username</label>
-                                                <input type="text"
-                                                    class="form-control"
-                                                    name="username"
-                                                    placeholder="Username" />
-                                            </div>
-
-                                            <!-- Address -->
-                                            <div class="form-group">
-                                                <label>Address</label>
-                                                <textarea name="address"
-                                                    class="form-control"
-                                                    placeholder="Address"></textarea>
-                                            </div>
-
-                                            <!-- DOB & Gender -->
-                                            <div class="form-row">
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Date of Birth</label>
-                                                    <input type="date"
-                                                        class="form-control"
-                                                        name="dob"
-                                                        placeholder="Date of Birth" />
-                                                </div>
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Gender</label><br />
-                                                    <div
-                                                        class="form-check form-check-inline">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="radio"
-                                                            name="gender"
-                                                            value="Male" />
-                                                        <label
-                                                            class="form-check-label">Male</label>
-                                                    </div>
-                                                    <div
-                                                        class="form-check form-check-inline">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="radio"
-                                                            name="gender"
-                                                            value="Female" />
-                                                        <label
-                                                            class="form-check-label">Female</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Hobby -->
-                                            <div class="form-group">
-                                                <label>Hobby</label>
-                                                <select class="form-control"
-                                                    name="hobby">
-                                                    <option value>-- Select
-                                                        Hobby --</option>
-                                                    <option>Singing</option>
-                                                    <option>Dancing</option>
-                                                    <option>Travelling</option>
-                                                    <option>Drawing</option>
-                                                    <option>Cooking</option>
-                                                    <option>Reading</option>
-                                                    <option>Photography</option>
-                                                    <option>Gaming</option>
-                                                    <option>Sports</option>
-                                                    <option>Coding</option>
-                                                    <option>Other</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Passwords -->
-                                            <div class="form-row">
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Password</label>
-                                                    <div class="input-group">
-                                                        <input type="password"
-                                                            class="form-control"
-                                                            name="password"
-                                                            id="password"
-                                                            placeholder="Password" />
-                                                        <div
-                                                            class="input-group-append">
-                                                            <span
-                                                                class="input-group-text"
-                                                                style="cursor: pointer;"
-                                                                onclick="togglePassword('password', 'eyeIcon1')">
-                                                                <i id="eyeIcon1"
-                                                                    class="fa-solid fa-eye"></i>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Confirm
-                                                        Password</label>
-                                                    <div class="input-group">
-                                                        <input type="password"
-                                                            class="form-control"
-                                                            name="confirmPassword"
-                                                            id="confirmPassword"
-                                                            placeholder="Retype Password" />
-                                                        <div
-                                                            class="input-group-append">
-                                                            <span
-                                                                class="input-group-text"
-                                                                style="cursor: pointer;"
-                                                                onclick="togglePassword('confirmPassword', 'eyeIcon2')">
-                                                                <i id="eyeIcon2"
-                                                                    class="fa-solid fa-eye"></i>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                            <!-- Submit -->
-                                            <div
-                                                class="form-group text-center mt-4">
-                                                <button type="submit"
-                                                    class="btn btn-success btn-lg w-100">Add
-                                                    User</button>
-                                            </div>
-                                        </form>
-
-                                        <div class="text-center mt-2">
-                                            <a href="/manageuser"
-                                                class="text-muted">← Go Back</a>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+      <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>Add User</h1>
+              </div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                  <li class="breadcrumb-item"><a
+                      href="#">Home</a></li>
+                  <li class="breadcrumb-item active">Manage
+                    User</li>
+                  <li class="breadcrumb-item active">Add
+                    User</li>
+                </ol>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
 
-        <!-- Common Scripts -->
-        <%- include('partials/scripts') %>
+        <section class="content">
+          <div class="container-fluid">
+            <div class="row justify-content-center">
+              <div class="col-md-8">
+                <div class="card" style="    width: 102%;">
+                  <div class="card-body">
 
-        <!-- ✅ jQuery Validate -->
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+                    <% if (typeof error !== 'undefined' &&
+                    error) { %>
+                    <div
+                      class="alert alert-danger alert-dismissible fade show"
+                      role="alert">
+                      <%= error %>
+                      <button type="button" class="close"
+                        data-dismiss="alert"
+                        aria-label="Close">
+                        <span
+                          aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <% } %>
 
-        <script>
+                    <% if (typeof success !== 'undefined' &&
+                    success) { %>
+                    <div
+                      class="alert alert-success alert-dismissible fade show"
+                      role="alert">
+                      <%= success %>
+                      <button type="button" class="close"
+                        data-dismiss="alert"
+                        aria-label="Close">
+                        <span
+                          aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <% } %>
+
+                    <form action="/adduser" method="POST"
+                      enctype="multipart/form-data"
+                      id="adduser">
+                      <div class="text-center mb-4">
+                        <div
+                          class="profile-image-wrapper">
+                          <img
+                            src="/src/assets/image/uploads/profile-user.png"
+                            alt="User Avatar"
+                            id="previewImg" />
+                          <label for="imageUpload"><i
+                              class="fas fa-camera text-white"></i></label>
+                          <input type="file"
+                            id="imageUpload"
+                            name="image"
+                            accept="image/*" />
+                        </div>
+                      </div>
+
+                      <!-- Name -->
+                      <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text"
+                          class="form-control"
+                          name="name"
+                          placeholder="Full Name" />
+                      </div>
+
+                      <!-- Email & Phone -->
+                      <div class="form-row">
+                        <div
+                          class="form-group col-md-6">
+                          <label>Email</label>
+                          <input type="email"
+                            class="form-control"
+                            name="email"
+                            placeholder="Email" />
+                        </div>
+                        <div
+                          class="form-group col-md-6">
+                          <label>Phone Number</label>
+                          <input type="text"
+                            class="form-control"
+                            name="phone"
+                            placeholder="Phone Number" />
+                        </div>
+                      </div>
+
+                      <!-- Username -->
+                      <div class="form-group">
+                        <label>Username</label>
+                        <input type="text"
+                          class="form-control"
+                          name="username"
+                          placeholder="Username" />
+                      </div>
+
+                      <!-- Address -->
+                      <div class="form-group">
+                        <label>Address</label>
+                        <textarea name="address"
+                          class="form-control"
+                          placeholder="Address"></textarea>
+                      </div>
+
+                      <!-- DOB & Gender -->
+                      <div class="form-row">
+                        <div
+                          class="form-group col-md-6">
+                          <label>Date of Birth</label>
+                          <input type="date"
+                            class="form-control"
+                            name="dob"
+                            placeholder="Date of Birth" />
+                        </div>
+                        <div
+                          class="form-group col-md-6">
+                          <label>Gender</label><br />
+                          <div
+                            class="form-check form-check-inline">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="gender"
+                              value="Male" />
+                            <label
+                              class="form-check-label">Male</label>
+                          </div>
+                          <div
+                            class="form-check form-check-inline">
+                            <input
+                              class="form-check-input"
+                              type="radio"
+                              name="gender"
+                              value="Female" />
+                            <label
+                              class="form-check-label">Female</label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Hobby -->
+                      <div class="form-group">
+                        <label>Hobby</label><br />
+                        <% const hobbiesList = [
+                        "Singing", "Dancing", "Travelling", "Drawing",
+                        "Gym", "Hike", "Gaming", "Sports", "Coding", "Other"
+                        ]; %>
+
+                        <% hobbiesList.forEach(h => { %>
+                        <div class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="hobby"
+                            value="<%= h %>" />
+                          <label class="form-check-label"><%= h %></label>
+                        </div>
+                        <% }); %>
+                      </div>
+
+                      <!-- Passwords -->
+                      <div class="form-row">
+                        <div
+                          class="form-group col-md-6">
+                          <label>Password</label>
+                          <div class="input-group">
+                            <input type="password"
+                              class="form-control"
+                              name="password"
+                              id="password"
+                              placeholder="Password" />
+                            <div
+                              class="input-group-append">
+                              <span
+                                class="input-group-text"
+                                style="cursor: pointer;"
+                                onclick="togglePassword('password', 'eyeIcon1')">
+                                <i id="eyeIcon1"
+                                  class="fa-solid fa-eye"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          class="form-group col-md-6">
+                          <label>Confirm
+                            Password</label>
+                          <div class="input-group">
+                            <input type="password"
+                              class="form-control"
+                              name="confirmPassword"
+                              id="confirmPassword"
+                              placeholder="Retype Password" />
+                            <div
+                              class="input-group-append">
+                              <span
+                                class="input-group-text"
+                                style="cursor: pointer;"
+                                onclick="togglePassword('confirmPassword', 'eyeIcon2')">
+                                <i id="eyeIcon2"
+                                  class="fa-solid fa-eye"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <!-- Submit -->
+                      <div
+                        class="form-group text-center mt-4">
+                        <button type="submit"
+                          class="btn btn-success btn-lg w-100">Add
+                          User</button>
+                      </div>
+                    </form>
+
+                    <div class="text-center mt-2">
+                      <a href="/manageuser"
+                        class="text-muted">← Go Back</a>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Common Scripts -->
+    <%- include('partials/scripts') %>
+
+    <!-- ✅ jQuery Validate -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+    <script>
   // Custom pattern rule
   $.validator.addMethod("pattern", function (value, element, param) {
     if (this.optional(element)) return true;
@@ -430,9 +429,9 @@
   });
 </script>
 
-        <!-- ✅ Validation Script -->
-        <script src="/src/assets/js/authjs.js"></script>
-        <script>
+    <!-- ✅ Validation Script -->
+    <script src="/src/assets/js/authjs.js"></script>
+    <script>
   // Image Preview
   document.getElementById("imageUpload").addEventListener("change", function (e) {
     const img = document.getElementById("previewImg");
@@ -441,5 +440,5 @@
     }
   });
 </script>
-    </body>
+  </body>
 </html>
