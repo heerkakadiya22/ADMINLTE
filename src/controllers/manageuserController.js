@@ -165,3 +165,142 @@ exports.deleteUser = (req, res) => {
     });
   });
 };
+
+exports.showedituser = (req, res) => {
+  const selectedUserId = req.params.id;
+  const currentAdminId = req.session.adminId;
+
+  const getSelectedUserSql = "SELECT * FROM admin WHERE id = ?";
+  const getCurrentAdminSql = "SELECT * FROM admin WHERE id = ?";
+
+  db.query(getSelectedUserSql, [selectedUserId], (err, selectedResult) => {
+    if (err || selectedResult.length === 0) {
+      return res.redirect("/manageuser");
+    }
+    const selectedUser = selectedResult[0];
+
+    db.query(getCurrentAdminSql, [currentAdminId], (err2, currentResult) => {
+      if (err2 || currentResult.length === 0) {
+        return res.redirect("/login");
+      }
+      const currentUser = currentResult[0];
+
+      const selectedImagePath = selectedUser.image
+        ? "/src/assets/image/uploads/" + selectedUser.image
+        : "/src/assets/image/uploads/profile-user.png";
+
+      const currentImagePath = currentUser.image
+        ? "/src/assets/image/uploads/" + currentUser.image
+        : "/src/assets/image/uploads/profile-user.png";
+
+      const successMessage = req.session.success;
+      delete req.session.success;
+
+      return res.render("edituser", {
+        csrfToken: req.csrfToken(),
+
+        // These are ALWAYS the logged-in admin
+        name: currentUser.name,
+        image: currentImagePath,
+
+        // These are the selected user to edit
+        editName: selectedUser.name,
+        editEmail: selectedUser.email,
+        editPhone: selectedUser.phone_no,
+        editUsername: selectedUser.username,
+        editAddress: selectedUser.address,
+        editDob: selectedUser.dob
+          ? selectedUser.dob.toISOString().split("T")[0]
+          : "",
+        editGender: selectedUser.gender,
+        editHobby: selectedUser.hobby ? selectedUser.hobby.split(",") : [],
+        editImage: selectedImagePath,
+
+        success: successMessage || null,
+      });
+    });
+  });
+};
+
+// POST: Update selected user
+exports.updateUser = (req, res) => {
+  let { name, email, username, address, dob, gender, phone, hobby } = req.body;
+
+  const newImage = req.file ? req.file.filename : null;
+
+  const getImageSql = "SELECT image FROM admin WHERE id = ?";
+  db.query(getImageSql, [id], (err, result) => {
+    if (err || result.length === 0) {
+      return res.render("edituser", {
+        // logged-in admin info
+        name: req.session.name,
+        image: req.session.image,
+
+        editName: name,
+        editEmail: email,
+        editUsername: username,
+        editAddress: address,
+        editDob: dob,
+        editGender: gender,
+        editPhone: phone,
+        editHobby: Array.isArray(hobby) ? hobby : hobby ? [hobby] : [],
+        editImage: "/src/assets/image/uploads/profile-user.png",
+
+        error: "Failed to fetch existing image.",
+        success: null,
+      });
+    }
+
+    const currentImage = result[0].image || "profile-user.png";
+    const imageToUse = newImage || currentImage;
+
+    if (!hobby) hobby = [];
+    else if (!Array.isArray(hobby)) hobby = [hobby];
+    const hobbyString = hobby.join(",");
+
+    const sql = `
+      UPDATE admin SET 
+        name = ?, email = ?, username = ?, image = ?, 
+        address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
+      WHERE id = ?
+    `;
+    const values = [
+      name,
+      email,
+      username,
+      imageToUse,
+      address,
+      dob,
+      gender,
+      phone,
+      hobbyString,
+      id,
+    ];
+
+    db.query(sql, values, (err, result) => {
+      if (err || result.affectedRows === 0) {
+        return res.render("edituser", {
+          // logged-in admin info
+          name: req.session.name,
+          image: req.session.image,
+
+          editName: name,
+          editEmail: email,
+          editUsername: username,
+          editAddress: address,
+          editDob: dob,
+          editGender: gender,
+          editPhone: phone,
+          editHobby: hobby,
+          editImage: "/src/assets/image/uploads/" + imageToUse,
+
+          error: "Database update failed or no changes made.",
+          success: null,
+        });
+      }
+
+      req.session.success = "User updated successfully.";
+      res.redirect("/edituser");
+    });
+  });
+};

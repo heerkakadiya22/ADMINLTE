@@ -69,4 +69,11 @@ router.post(
 
 router.get("/deleteuser/:id", manageuserController.deleteUser);
 
+router.get("/edituser/:id", csrfProtection, manageuserController.showedituser);
+router.post(
+  "/edituser",
+  upload.single("image"),
+  manageuserController.updateUser
+);
+
 module.exports = router;
