@@ -67,4 +67,6 @@ router.post(
   manageuserController.insertuser
 );
 
+router.get("/deleteuser/:id", manageuserController.deleteUser);
+
 module.exports = router;

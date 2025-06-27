@@ -19,6 +19,9 @@ exports.getalluser = (req, res) => {
     const imagePath =
       "/src/assets/image/uploads/" + (admin.image || "profile-user.png");
 
+    const successMessage = req.session.success;
+    req.session.success = null;
+
     // Now fetch all users for display in table
     const userSql = "SELECT * FROM admin";
     db.query(userSql, (userErr, userResult) => {
@@ -28,6 +31,7 @@ exports.getalluser = (req, res) => {
           name: admin.name,
           image: imagePath,
           user: [],
+          success: req.session.success,
         });
       }
 
@@ -36,6 +40,7 @@ exports.getalluser = (req, res) => {
         name: admin.name,
         image: imagePath,
         user: userResult,
+        success: successMessage,
       });
     });
   });
@@ -126,5 +131,37 @@ exports.insertuser = (req, res) => {
 
     req.session.success = "User added successfully!";
     return res.redirect("adduser");
+  });
+};
+
+exports.deleteUser = (req, res) => {
+  const userId = req.params.id;
+
+  // Step 1: Get user details (to get the name)
+  const getUserSql = "SELECT name FROM admin WHERE id = ?";
+  db.query(getUserSql, [userId], (err, userResult) => {
+    if (err || userResult.length === 0) {
+      console.error("Error fetching user:", err);
+      return res.render("manageuser", {
+        error: "User not found or failed to fetch.",
+      });
+    }
+
+    const userName = userResult[0].name;
+
+    // Step 2: Delete the user
+    const deleteSql = "DELETE FROM admin WHERE id = ?";
+    db.query(deleteSql, [userId], (err, result) => {
+      if (err) {
+        console.error("Error deleting user:", err);
+        return res.render("manageuser", {
+          error: "Failed to delete user.",
+        });
+      }
+
+      // Step 3: Set success message
+      req.session.success = `User "${userName}" deleted successfully!`;
+      return res.redirect("/manageuser");
+    });
   });
 };
