@@ -97,66 +97,83 @@ exports.updateProfile = (req, res) => {
 
     const hobbyString = hobby.join(",");
 
-    const updateSql = `
-      UPDATE admin SET 
-        name = ?, 
-        email = ?, 
-        username = ?, 
-        image = ?, 
-        address = ?, 
-        dob = ?, 
-        gender = ?, 
-        phone_no = ?, 
-        hobby = ?
-      WHERE id = ?
-    `;
+    const checkSql =
+      "SELECT * FROM admin WHERE (username = ? OR phone_no = ?) AND id != ?";
+    db.query(checkSql, [username, phone, id], (err, checkResults) => {
+      if (err)
+        return renderWithError("Database error while checking unique fields.");
 
-    const values = [
-      name,
-      email,
-      username,
-      imageToUse,
-      address,
-      dob,
-      gender,
-      phone,
-      hobbyString,
-      id,
-    ];
-
-    db.query(updateSql, values, (err) => {
-      if (err) {
-        return res.render("editProfile", {
-          name,
-          email,
-          username,
-          address,
-          dob,
-          gender,
-          phone,
-          hobby,
-          image: "/src/assets/image/uploads/" + imageToUse,
-          error: "Database update failed.",
-          success: null,
-          csrfToken: req.csrfToken(),
-          currentPage: "editprofile",
-        });
+      if (checkResults.length) {
+        const existing = checkResults[0];
+        const conflictMessage =
+          existing.username === username
+            ? "Username already exists."
+            : "Phone number already exists.";
+        return renderWithError(conflictMessage);
       }
 
-      // Always set the success message
-      req.session.name = name;
-      req.session.email = email;
-      req.session.image = imageToUse;
-      console.log("Setting successMsg");
-      req.session.successMsg = "Profile updated successfully.";
+      const updateSql = `
+        UPDATE admin SET 
+          name = ?, 
+          email = ?, 
+          username = ?, 
+          image = ?, 
+          address = ?, 
+          dob = ?, 
+          gender = ?, 
+          phone_no = ?, 
+          hobby = ?
+        WHERE id = ?
+      `;
 
-      req.session.save((err) => {
+      const values = [
+        name,
+        email,
+        username,
+        imageToUse,
+        address,
+        dob,
+        gender,
+        phone,
+        hobbyString,
+        id,
+      ];
+
+      db.query(updateSql, values, (err) => {
         if (err) {
-          console.error("Session save error:", err);
+          return renderWithError("Database update failed.");
         }
 
-        res.redirect("/editprofile");
+        req.session.name = name;
+        req.session.email = email;
+        req.session.image = imageToUse;
+        console.log("Setting successMsg");
+        req.session.successMsg = "Profile updated successfully.";
+
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+          }
+
+          res.redirect("/editprofile");
+        });
       });
     });
+    function renderWithError(errorMessage) {
+      res.render("editProfile", {
+        name,
+        email,
+        username,
+        address,
+        dob,
+        gender,
+        phone,
+        hobby,
+        image: "/src/assets/image/uploads/" + imageToUse,
+        error: errorMessage,
+        success: null,
+        currentPage: "editprofile",
+      });
+    }
   });
 };

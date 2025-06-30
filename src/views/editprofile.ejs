@@ -126,10 +126,9 @@
                                 <div class="card">
                                     <div class="card-body">
 
-                                        <% if (typeof error !== 'undefined' &&
-                                        error) { %>
-                                        <div id="error"
-                                            class="alert alert-dan">
+                                        <% if (error) { %>
+                                        <div id="errorMsg"
+                                            class="alert alert-danger">
                                             <%= error %>
                                         </div>
                                         <% } %>
@@ -334,6 +333,17 @@
           successDiv.style.display = "none";
         }, 500);
       }, 3000);
+    }
+
+     const errorDiv = document.getElementById("errorMsg");
+    if (errorDiv) {
+      setTimeout(() => {
+        errorDiv.style.transition = "opacity 0.5s ease";
+        errorDiv.style.opacity = "0";
+        setTimeout(() => {
+          errorDiv.style.display = "none";
+        }, 500);
+      }, 5000); 
     }
   });
 
