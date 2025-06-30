@@ -97,15 +97,13 @@ exports.addUserValidation = [
 
   // Phone
   body("phone")
-    .notEmpty()
-    .withMessage("Phone number is required")
+    .optional()
     .matches(/^\d{10}$/)
     .withMessage("Phone number must be 10 digits"),
 
   // Username
   body("username")
-    .notEmpty()
-    .withMessage("Username is required")
+    .optional()
     .isLength({ min: 4 })
     .withMessage("Username must be at least 4 characters"),
 
@@ -116,21 +114,16 @@ exports.addUserValidation = [
     .withMessage("Address must be less than 200 characters"),
 
   // DOB
-  body("dob")
-    .notEmpty()
-    .withMessage("Date of birth is required")
-    .isISO8601()
-    .withMessage("Invalid date format"),
+  body("dob").optional().isISO8601().withMessage("Invalid date format"),
 
   // Gender
   body("gender")
-    .notEmpty()
-    .withMessage("Gender is required")
+    .optional()
     .isIn(["Male", "Female"])
     .withMessage("Gender must be Male or Female"),
 
   // Hobby
-  body("hobby").notEmpty().withMessage("Hobby is required"),
+  body("hobby").optional(),
 
   // Password
   body("password")

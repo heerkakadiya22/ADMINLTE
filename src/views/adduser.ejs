@@ -107,10 +107,11 @@
 
                       <!-- Name -->
                       <div class="form-group">
-                        <label>Full Name</label>
+                        <label for="name">Full Name</label>
                         <input type="text"
                           class="form-control"
                           name="name"
+                          id="name"
                           placeholder="Full Name" />
                       </div>
 
@@ -118,10 +119,11 @@
                       <div class="form-row">
                         <div
                           class="form-group col-md-6">
-                          <label>Email</label>
+                          <label for="email">Email</label>
                           <input type="email"
                             class="form-control"
                             name="email"
+                            id="email"
                             placeholder="Email" />
                         </div>
                         <div
@@ -211,7 +213,7 @@
                       <div class="form-row">
                         <div
                           class="form-group col-md-6">
-                          <label>Password</label>
+                          <label for="password">Password</label>
                           <div class="input-group">
                             <input type="password"
                               class="form-control"
@@ -233,7 +235,7 @@
 
                         <div
                           class="form-group col-md-6">
-                          <label>Confirm
+                          <label for="confirmPassword">Confirm
                             Password</label>
                           <div class="input-group">
                             <input type="password"
@@ -296,6 +298,22 @@
     return param.test(value);
   }, "Invalid format.");
 
+  $.validator.addMethod("genderValid", function(value, element) {
+  if (value === "") {
+    return true; // allow empty
+  }
+  return value === "Male" || value === "Female";
+}, "Gender must be Male or Female");
+
+$.validator.addMethod("isoDate", function(value, element) {
+  if (value === "") {
+    return true; // allow empty
+  }
+  // Simple regex for YYYY-MM-DD format
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}, "Please enter a valid date (YYYY-MM-DD)");
+
+
   $(function () {
     $("#adduser").validate({
       rules: {
@@ -308,15 +326,14 @@
           email: true,
         },
         phone: {
-          required: true,
           digits: true,
           maxlength: 10,
         },
         address: {
-          required: true,
+          maxlength: 200,
         },
         username: {
-          required: true,
+          minlength: 4,
         },
         password: {
           required: true,
@@ -328,15 +345,14 @@
           required: true,
           equalTo: "#password",
         },
-        dob: {
-          required: true,
-        },
-        gender: {
-          required: true,
-        },
-        hobby: {
-          required: true,
-        },
+          gender: {
+      genderValid: true
+    },
+    hobby: {
+    },
+    dob: {
+      isoDate: true
+    },
       },
       messages: {
         name: {
@@ -348,15 +364,14 @@
           email: "Enter a valid email address.",
         },
         phone: {
-          required: "Phone is required.",
           digits: "Only digits allowed.",
           maxlength: "Phone cannot exceed 10 digits.",
         },
         address: {
-          required: "Address is required.",
+          maxlength: "Address must be less than 200 characters.",
         },
         username: {
-          required: "Username is required.",
+          minlength: "Username must be at least 4 characters",
         },
         password: {
           required: "Password is required.",
@@ -368,15 +383,12 @@
           required: "Please confirm your password.",
           equalTo: "Passwords do not match.",
         },
-        dob: {
-          required: "Date of birth is required.",
-        },
         gender: {
-          required: "Please select gender.",
-        },
-        hobby: {
-          required: "Please select hobby.",
-        },
+      genderValid: "Gender must be Male or Female"
+    },
+      dob: {
+      isoDate: "Please enter a valid date in YYYY-MM-DD format"
+    }
       },
       errorElement: "label",
       errorClass: "error",
@@ -398,6 +410,39 @@
 }
     });
   });
+
+  $(function() {
+  // Define the fields you want to target
+  var requiredFields = ["name", "email", "password", "confirmPassword"];
+
+  requiredFields.forEach(function(fieldName) {
+    var $field = $("#adduser").find("[name='" + fieldName + "']");
+    var id = $field.attr("id");
+
+    if (id) {
+      // Create the asterisk span
+      var $asterisk = $('<span class="required-star" style="color:red; margin-left:3px">*</span>');
+
+      // Append it to the label
+      $("label[for='" + id + "']").append($asterisk);
+
+      // Show or hide based on initial value
+      if ($field.val().trim() !== "") {
+        $asterisk.hide();
+      }
+
+      // Listen to input changes
+      $field.on("input change", function() {
+        if ($field.val().trim() === "") {
+          $asterisk.fadeIn();
+        } else {
+          $asterisk.fadeOut();
+        }
+      });
+    }
+  });
+});
+
 </script>
 
     <!-- ✅ Validation Script -->
