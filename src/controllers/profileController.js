@@ -37,7 +37,7 @@ exports.showEditProfile = (req, res) => {
     }
 
     const hobbyArray = user.hobby ? user.hobby.split(",") : [];
-
+    console.log("Session successMsg at render:", req.session.successMsg);
     res.render("editProfile", {
       name: user.name,
       email: user.email,
@@ -60,11 +60,13 @@ exports.showEditProfile = (req, res) => {
 
 // POST: Update profile
 exports.updateProfile = (req, res) => {
-  let { name, email, username, address, dob, gender, phone, hobby } = req.body;
+  const { name, email, username, address, dob, gender, phone } = req.body;
+  let { hobby } = req.body;
   const id = req.session.adminId;
   const newImage = req.file ? req.file.filename : null;
 
   const getImageSql = "SELECT image FROM admin WHERE id = ?";
+
   db.query(getImageSql, [id], (err, result) => {
     if (err || result.length === 0) {
       return res.render("editProfile", {
@@ -79,21 +81,33 @@ exports.updateProfile = (req, res) => {
         image: "/src/assets/image/uploads/profile-user.png",
         error: "Failed to fetch existing image.",
         success: null,
+        csrfToken: req.csrfToken(),
+        currentPage: "editprofile",
       });
     }
 
     const currentImage = result[0].image || "profile-user.png";
     const imageToUse = newImage || currentImage;
 
-    if (!hobby) hobby = [];
-    else if (!Array.isArray(hobby)) hobby = [hobby];
+    if (!hobby) {
+      hobby = [];
+    } else if (!Array.isArray(hobby)) {
+      hobby = [hobby];
+    }
 
     const hobbyString = hobby.join(",");
 
-    const sql = `
+    const updateSql = `
       UPDATE admin SET 
-        name = ?, email = ?, username = ?, image = ?, 
-        address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
+        name = ?, 
+        email = ?, 
+        username = ?, 
+        image = ?, 
+        address = ?, 
+        dob = ?, 
+        gender = ?, 
+        phone_no = ?, 
+        hobby = ?
       WHERE id = ?
     `;
 
@@ -110,8 +124,8 @@ exports.updateProfile = (req, res) => {
       id,
     ];
 
-    db.query(sql, values, (err, result) => {
-      if (err || result.affectedRows === 0) {
+    db.query(updateSql, values, (err) => {
+      if (err) {
         return res.render("editProfile", {
           name,
           email,
@@ -122,18 +136,27 @@ exports.updateProfile = (req, res) => {
           phone,
           hobby,
           image: "/src/assets/image/uploads/" + imageToUse,
-          error: "Database update failed or no changes made.",
+          error: "Database update failed.",
           success: null,
+          csrfToken: req.csrfToken(),
+          currentPage: "editprofile",
         });
       }
 
-      // Update session
+      // Always set the success message
       req.session.name = name;
       req.session.email = email;
       req.session.image = imageToUse;
+      console.log("Setting successMsg");
       req.session.successMsg = "Profile updated successfully.";
 
-      res.redirect("/editprofile");
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+        }
+
+        res.redirect("/editprofile");
+      });
     });
   });
 };

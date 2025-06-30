@@ -125,33 +125,19 @@
                             <div class="col-md-9">
                                 <div class="card">
                                     <div class="card-body">
+
                                         <% if (typeof error !== 'undefined' &&
                                         error) { %>
-                                        <div
-                                            class="alert alert-danger alert-dismissible fade show"
-                                            role="alert">
+                                        <div id="error"
+                                            class="alert alert-dan">
                                             <%= error %>
-                                            <button type="button" class="close"
-                                                data-dismiss="alert"
-                                                aria-label="Close">
-                                                <span
-                                                    aria-hidden="true">&times;</span>
-                                            </button>
                                         </div>
                                         <% } %>
 
-                                        <% if (typeof success !== 'undefined' &&
-                                        success) { %>
-                                        <div
-                                            class="alert alert-success alert-dismissible fade show"
-                                            role="alert">
+                                        <% if (success) { %>
+                                        <div id="successMsg"
+                                            class="alert alert-success">
                                             <%= success %>
-                                            <button type="button" class="close"
-                                                data-dismiss="alert"
-                                                aria-label="Close">
-                                                <span
-                                                    aria-hidden="true">&times;</span>
-                                            </button>
                                         </div>
                                         <% } %>
 
@@ -337,6 +323,20 @@
           img.src = URL.createObjectURL(e.target.files[0]);
         }
       });
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const successDiv = document.getElementById("successMsg");
+    if (successDiv) {
+      setTimeout(() => {
+        successDiv.style.transition = "opacity 0.5s ease";
+        successDiv.style.opacity = "0";
+        setTimeout(() => {
+          successDiv.style.display = "none";
+        }, 500);
+      }, 3000);
+    }
+  });
+
     </script>
     </body>
 </html>
