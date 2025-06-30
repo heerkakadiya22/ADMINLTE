@@ -50,6 +50,7 @@ exports.getalluser = (req, res) => {
   });
 };
 
+//adduser controller
 exports.showadduser = (req, res) => {
   const id = req.session.adminId;
 
@@ -70,6 +71,7 @@ exports.showadduser = (req, res) => {
       csrfToken: req.csrfToken(),
       name: user.name,
       image: imagePath,
+      error: null,
       success: successMessage || null,
       currentPage: "manageuser",
     });
@@ -90,56 +92,83 @@ exports.insertuser = (req, res) => {
     confirmPassword,
   } = req.body;
 
+  // Password confirmation
   if (password !== confirmPassword) {
-    return res.render("adduser", {
-      error: "Passwords do not match",
+    return renderWithError("Passwords do not match.");
+  }
+
+  const image = req.file ? req.file.filename : "profile-user.png";
+  const hobbyFormatted = Array.isArray(hobby) ? hobby.join(",") : hobby;
+
+  // Check if username, email, or phone already exists
+  const checkSql = `
+    SELECT * FROM admin 
+    WHERE username = ? OR email = ? OR phone_no = ?
+  `;
+
+  db.query(checkSql, [username, email, phone], (err, existingUsers) => {
+    if (err) {
+      return renderWithError("Database error while checking existing users.");
+    }
+
+    if (existingUsers.length) {
+      const existing = existingUsers[0];
+      let conflictMessage = "A user with the same credentials already exists.";
+
+      if (existing.username === username) {
+        conflictMessage = "Username already exists.";
+      } else if (existing.email === email) {
+        conflictMessage = "Email already exists.";
+      } else if (existing.phone_no === phone) {
+        conflictMessage = "Phone number already exists.";
+      }
+
+      return renderWithError(conflictMessage);
+    }
+
+    const insertSql = `
+      INSERT INTO admin 
+      (name, email, password, username, image, phone_no, address, hobby, dob, gender)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+      name,
+      email,
+      password,
+      username,
+      image,
+      phone,
+      address,
+      hobbyFormatted,
+      dob,
+      gender,
+    ];
+
+    db.query(insertSql, values, (err) => {
+      if (err) {
+        return renderWithError("Failed to add user.");
+      }
+
+      req.session.success = "User added successfully!";
+      res.redirect("/manageuser");
+    });
+  });
+
+  // Helper function to render the form with error
+  function renderWithError(errorMessage) {
+    res.render("adduser", {
+      error: errorMessage,
+      success: null,
       name: req.session.adminName,
       image:
         req.session.adminImage || "/src/assets/image/uploads/profile-user.png",
       csrfToken: "",
     });
   }
-
-  const image = req.file ? req.file.filename : "profile-user.png";
-
-  const hobbyFormatted = Array.isArray(hobby) ? hobby.join(",") : hobby;
-
-  const insertSql = `
-    INSERT INTO admin (name, email, password, username, image, phone_no, address, hobby, dob, gender)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  const values = [
-    name,
-    email,
-    password,
-    username,
-    image,
-    phone,
-    address,
-    hobbyFormatted,
-    dob,
-    gender,
-  ];
-
-  db.query(insertSql, values, (err, result) => {
-    if (err) {
-      console.error("SQL Error:", err.sqlMessage);
-      return res.render("adduser", {
-        error: "Failed to add user.",
-        name: req.session.adminName,
-        image:
-          req.session.adminImage ||
-          "/src/assets/image/uploads/profile-user.png",
-        csrfToken: "",
-      });
-    }
-
-    req.session.success = "User added successfully!";
-    return res.redirect("/manageuser");
-  });
 };
 
+//delete controller
 exports.deleteUser = (req, res) => {
   const userId = req.params.id;
 
@@ -186,7 +215,7 @@ exports.deleteUser = (req, res) => {
   });
 };
 
-// GET: Show Edit User Form
+// edit user controller
 exports.showedituser = (req, res) => {
   const selectedUserId = req.params.id;
   const currentAdminId = req.session.adminId;
@@ -260,6 +289,7 @@ exports.updateUser = (req, res) => {
 
   const newImage = req.file ? req.file.filename : null;
 
+  // Get the existing image
   const getImageSql = "SELECT image FROM admin WHERE id = ?";
   db.query(getImageSql, [id], (err, result) => {
     if (err || result.length === 0) {
@@ -280,54 +310,91 @@ exports.updateUser = (req, res) => {
       formattedDob = new Date(dob).toISOString().split("T")[0];
     }
 
-    const updateSql = `
-      UPDATE admin SET 
-        name = ?, email = ?, username = ?, image = ?,
-        address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
-      WHERE id = ?
+    // ✅ Check if username, email, or phone already exist in other users
+    const checkSql = `
+      SELECT * FROM admin
+      WHERE (username = ? OR email = ? OR phone_no = ?) AND id != ?
     `;
-    const values = [
-      name,
-      email,
-      username,
-      imageToUse,
-      address,
-      formattedDob,
-      gender,
-      phone,
-      hobbyString,
-      id,
-    ];
+    db.query(
+      checkSql,
+      [username, email, phone, id],
+      (checkErr, checkResults) => {
+        if (checkErr) {
+          return renderWithError(
+            "Database error while checking unique fields."
+          );
+        }
 
-    db.query(updateSql, values, (updateErr, updateResult) => {
-      if (updateErr || updateResult.affectedRows === 0) {
-        return res.render("edituser", {
-          csrfToken: req.csrfToken(),
+        if (checkResults.length) {
+          const existing = checkResults[0];
+          let conflictMessage =
+            "A user with the same credentials already exists.";
 
-          // logged-in admin info
-          name: req.session.name,
-          image: req.session.image,
+          if (existing.username === username) {
+            conflictMessage = "Username already exists.";
+          } else if (existing.email === email) {
+            conflictMessage = "Email already exists.";
+          } else if (existing.phone_no === phone) {
+            conflictMessage = "Phone number already exists.";
+          }
 
-          // pre-fill form fields with submitted data
-          editId: id,
-          editName: name,
-          editEmail: email,
-          editUsername: username,
-          editAddress: address,
-          editDob: formattedDob,
-          editGender: gender,
-          editPhone: phone,
-          editHobby: hobbyArray,
-          editImage: "/src/assets/image/uploads/" + imageToUse,
+          return renderWithError(conflictMessage);
+        }
 
-          currentPage: "manageuser",
-          success: null,
-          error: "Database update failed or no changes made.",
+        // No conflicts - proceed to update
+        const updateSql = `
+        UPDATE admin SET 
+          name = ?, email = ?, username = ?, image = ?,
+          address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
+        WHERE id = ?
+      `;
+        const values = [
+          name,
+          email,
+          username,
+          imageToUse,
+          address,
+          formattedDob,
+          gender,
+          phone,
+          hobbyString,
+          id,
+        ];
+
+        db.query(updateSql, values, (updateErr, updateResult) => {
+          if (updateErr || updateResult.affectedRows === 0) {
+            return renderWithError(
+              "Database update failed or no changes made."
+            );
+          }
+
+          req.session.success = "User updated successfully.";
+          return res.redirect("/manageuser");
         });
       }
+    );
 
-      req.session.success = "User updated successfully.";
-      return res.redirect("/manageuser");
-    });
+    function renderWithError(errorMessage) {
+      res.render("edituser", {
+        // logged-in admin info
+        name: req.session.name,
+        image: req.session.image,
+
+        editId: id,
+        editName: name,
+        editEmail: email,
+        editUsername: username,
+        editAddress: address,
+        editDob: formattedDob,
+        editGender: gender,
+        editPhone: phone,
+        editHobby: hobbyArray,
+        editImage: "/src/assets/image/uploads/" + imageToUse,
+
+        currentPage: "manageuser",
+        error: errorMessage,
+        success: null,
+      });
+    }
   });
 };
