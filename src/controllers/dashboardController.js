@@ -24,6 +24,7 @@ exports.dashboard = (req, res) => {
       email: user.email,
       image: imagePath,
       csrfToken: req.csrfToken(),
+      currentPage: "index",
     });
   });
 };

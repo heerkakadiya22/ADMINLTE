@@ -57,7 +57,8 @@
         <div class="wrapper">
 
             <%- include('partials/sidebar', { name: name, csrfToken: typeof
-            csrfToken !== 'undefined' ? csrfToken : null
+            csrfToken !== 'undefined' ? csrfToken : null,
+            currentPage: currentPage
             }) %>
 
             <div class="content-wrapper">
@@ -86,6 +87,7 @@
                             <div class="col-md-3">
                                 <div class="card card-primary card-outline">
                                     <div class="card-body box-profile">
+
                                         <div class="text-center">
                                             <img
                                                 class="profile-user-img img-fluid img-circle"
@@ -154,10 +156,13 @@
                                         </div>
                                         <% } %>
 
-                                        <form action="/editprofile"
+                                        <form action="/edituser"
                                             method="POST"
                                             enctype="multipart/form-data"
                                             id="editProfileForm" novalidate>
+
+                                            <input type="hidden" name="id"
+                                                value="<%= editId %>">
 
                                             <div class="text-center mb-4">
                                                 <div

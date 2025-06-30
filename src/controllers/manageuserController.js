@@ -32,6 +32,7 @@ exports.getalluser = (req, res) => {
           image: imagePath,
           user: [],
           success: req.session.success,
+          currentPage: "manageuser",
         });
       }
 
@@ -41,6 +42,7 @@ exports.getalluser = (req, res) => {
         image: imagePath,
         user: userResult,
         success: successMessage,
+        currentPage: "manageuser",
       });
     });
   });
@@ -67,6 +69,7 @@ exports.showadduser = (req, res) => {
       name: user.name,
       image: imagePath,
       success: successMessage || null,
+      currentPage: "manageuser",
     });
   });
 };
@@ -130,7 +133,7 @@ exports.insertuser = (req, res) => {
     }
 
     req.session.success = "User added successfully!";
-    return res.redirect("adduser");
+    return res.redirect("/manageuser");
   });
 };
 
@@ -166,6 +169,7 @@ exports.deleteUser = (req, res) => {
   });
 };
 
+// GET: Show Edit User Form
 exports.showedituser = (req, res) => {
   const selectedUserId = req.params.id;
   const currentAdminId = req.session.adminId;
@@ -199,11 +203,12 @@ exports.showedituser = (req, res) => {
       return res.render("edituser", {
         csrfToken: req.csrfToken(),
 
-        // These are ALWAYS the logged-in admin
+        // logged-in admin info (for header/sidebar)
         name: currentUser.name,
         image: currentImagePath,
 
-        // These are the selected user to edit
+        // user being edited
+        editId: selectedUser.id,
         editName: selectedUser.name,
         editEmail: selectedUser.email,
         editPhone: selectedUser.phone_no,
@@ -216,51 +221,44 @@ exports.showedituser = (req, res) => {
         editHobby: selectedUser.hobby ? selectedUser.hobby.split(",") : [],
         editImage: selectedImagePath,
 
+        currentPage: "manageuser",
         success: successMessage || null,
+        error: null,
       });
     });
   });
 };
 
 // POST: Update selected user
+// POST: Update User
 exports.updateUser = (req, res) => {
-  let { name, email, username, address, dob, gender, phone, hobby } = req.body;
+  const { id, name, email, username, address, dob, gender, phone, hobby } =
+    req.body;
+
+  if (!id || isNaN(Number(id))) {
+    return res.status(400).send("Invalid request: Missing or invalid user ID.");
+  }
 
   const newImage = req.file ? req.file.filename : null;
 
   const getImageSql = "SELECT image FROM admin WHERE id = ?";
   db.query(getImageSql, [id], (err, result) => {
     if (err || result.length === 0) {
-      return res.render("edituser", {
-        // logged-in admin info
-        name: req.session.name,
-        image: req.session.image,
-
-        editName: name,
-        editEmail: email,
-        editUsername: username,
-        editAddress: address,
-        editDob: dob,
-        editGender: gender,
-        editPhone: phone,
-        editHobby: Array.isArray(hobby) ? hobby : hobby ? [hobby] : [],
-        editImage: "/src/assets/image/uploads/profile-user.png",
-
-        error: "Failed to fetch existing image.",
-        success: null,
-      });
+      return res.status(500).send("User not found.");
     }
 
-    const currentImage = result[0].image || "profile-user.png";
-    const imageToUse = newImage || currentImage;
+    const existingImage = result[0].image || "profile-user.png";
+    const imageToUse = newImage || existingImage;
 
-    if (!hobby) hobby = [];
-    else if (!Array.isArray(hobby)) hobby = [hobby];
-    const hobbyString = hobby.join(",");
+    let hobbyArray = [];
+    if (hobby) {
+      hobbyArray = Array.isArray(hobby) ? hobby : [hobby];
+    }
+    const hobbyString = hobbyArray.join(",");
 
-    const sql = `
+    const updateSql = `
       UPDATE admin SET 
-        name = ?, email = ?, username = ?, image = ?, 
+        name = ?, email = ?, username = ?, image = ?,
         address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
       WHERE id = ?
     `;
@@ -277,13 +275,17 @@ exports.updateUser = (req, res) => {
       id,
     ];
 
-    db.query(sql, values, (err, result) => {
-      if (err || result.affectedRows === 0) {
+    db.query(updateSql, values, (updateErr, updateResult) => {
+      if (updateErr || updateResult.affectedRows === 0) {
         return res.render("edituser", {
+          csrfToken: req.csrfToken(),
+
           // logged-in admin info
           name: req.session.name,
           image: req.session.image,
 
+          // pre-fill form fields with submitted data
+          editId: id,
           editName: name,
           editEmail: email,
           editUsername: username,
@@ -291,16 +293,17 @@ exports.updateUser = (req, res) => {
           editDob: dob,
           editGender: gender,
           editPhone: phone,
-          editHobby: hobby,
+          editHobby: hobbyArray,
           editImage: "/src/assets/image/uploads/" + imageToUse,
 
-          error: "Database update failed or no changes made.",
+          currentPage: "manageuser",
           success: null,
+          error: "Database update failed or no changes made.",
         });
       }
 
       req.session.success = "User updated successfully.";
-      res.redirect("/edituser");
+      return res.redirect("/manageuser");
     });
   });
 };

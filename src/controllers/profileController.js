@@ -51,6 +51,7 @@ exports.showEditProfile = (req, res) => {
       error: null,
       success: req.session.successMsg || null,
       csrfToken: req.csrfToken(),
+      currentPage: "editprofile",
     });
 
     req.session.successMsg = null;

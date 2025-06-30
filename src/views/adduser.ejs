@@ -55,7 +55,8 @@
     <div class="wrapper">
 
       <%- include('partials/sidebar', { name: name, csrfToken: csrfToken
-      || '' }) %>
+      || '',
+      currentPage: currentPage }) %>
 
       <div class="content-wrapper">
         <section class="content-header">

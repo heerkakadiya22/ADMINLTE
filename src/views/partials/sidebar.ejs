@@ -230,8 +230,10 @@ border: 2px solid #6c757d; /* Optional: gray border */
                 data-accordion="false">
                 <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-                <li class="nav-item menu-open">
-                    <a href="/index" class="nav-link active">
+                <li
+                    class="nav-item <%= currentPage === 'index' ? 'menu-open' : '' %>">
+                    <a href="/index"
+                        class="nav-link <%= currentPage === 'index' ? 'active' : '' %>">
                         <i
                             class="nav-icon fas fa-tachometer-alt"></i>
                         <p>
@@ -240,10 +242,11 @@ border: 2px solid #6c757d; /* Optional: gray border */
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="/manageuser" class="nav-link">
-                        <i class="fas fa-users-cog"></i>
+                    <a href="/manageuser"
+                        class="nav-link <%= currentPage === 'manageuser' ? 'active' : '' %>">
+                        <i class="nav-icon fas fa-users-cog"></i>
                         <p>
-                            Manage User
+                            User
                         </p>
                     </a>
                 </li>
