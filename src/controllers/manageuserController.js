@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const path = require("path");
+const fs = require("fs");
 
 exports.getalluser = (req, res) => {
   const id = req.session.adminId;
@@ -73,6 +75,7 @@ exports.showadduser = (req, res) => {
     });
   });
 };
+
 exports.insertuser = (req, res) => {
   const {
     name,
@@ -140,29 +143,43 @@ exports.insertuser = (req, res) => {
 exports.deleteUser = (req, res) => {
   const userId = req.params.id;
 
-  // Step 1: Get user details (to get the name)
-  const getUserSql = "SELECT name FROM admin WHERE id = ?";
+  const getUserSql = "SELECT name, image FROM admin WHERE id = ?";
   db.query(getUserSql, [userId], (err, userResult) => {
     if (err || userResult.length === 0) {
-      console.error("Error fetching user:", err);
       return res.render("manageuser", {
         error: "User not found or failed to fetch.",
       });
     }
 
     const userName = userResult[0].name;
+    const imageFile = userResult[0].image;
 
-    // Step 2: Delete the user
     const deleteSql = "DELETE FROM admin WHERE id = ?";
-    db.query(deleteSql, [userId], (err, result) => {
+    db.query(deleteSql, [userId], (err) => {
       if (err) {
-        console.error("Error deleting user:", err);
         return res.render("manageuser", {
           error: "Failed to delete user.",
         });
       }
 
-      // Step 3: Set success message
+      if (imageFile) {
+        const imagePath = path.join(
+          __dirname,
+          "..",
+          "assets",
+          "image",
+          "uploads",
+          imageFile
+        );
+
+        fs.unlink(imagePath, (unlinkErr) => {
+          // Ignore if file not found
+          if (unlinkErr && unlinkErr.code !== "ENOENT") {
+            console.error("Error deleting image file:", unlinkErr);
+          }
+        });
+      }
+
       req.session.success = `User "${userName}" deleted successfully!`;
       return res.redirect("/manageuser");
     });
@@ -214,9 +231,11 @@ exports.showedituser = (req, res) => {
         editPhone: selectedUser.phone_no,
         editUsername: selectedUser.username,
         editAddress: selectedUser.address,
-        editDob: selectedUser.dob
-          ? selectedUser.dob.toISOString().split("T")[0]
-          : "",
+        editDob:
+          selectedUser.dob && !isNaN(new Date(selectedUser.dob))
+            ? new Date(selectedUser.dob).toISOString().split("T")[0]
+            : "",
+
         editGender: selectedUser.gender,
         editHobby: selectedUser.hobby ? selectedUser.hobby.split(",") : [],
         editImage: selectedImagePath,
@@ -256,6 +275,11 @@ exports.updateUser = (req, res) => {
     }
     const hobbyString = hobbyArray.join(",");
 
+    let formattedDob = null;
+    if (dob) {
+      formattedDob = new Date(dob).toISOString().split("T")[0];
+    }
+
     const updateSql = `
       UPDATE admin SET 
         name = ?, email = ?, username = ?, image = ?,
@@ -268,7 +292,7 @@ exports.updateUser = (req, res) => {
       username,
       imageToUse,
       address,
-      dob,
+      formattedDob,
       gender,
       phone,
       hobbyString,
@@ -290,7 +314,7 @@ exports.updateUser = (req, res) => {
           editEmail: email,
           editUsername: username,
           editAddress: address,
-          editDob: dob,
+          editDob: formattedDob,
           editGender: gender,
           editPhone: phone,
           editHobby: hobbyArray,

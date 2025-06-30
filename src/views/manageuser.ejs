@@ -5,6 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>AdminLTE | Manage Users</title>
         <%- include('partials/head') %>
+        <script
+            src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
     </head>
 
     <body class="hold-transition sidebar-mini">
@@ -121,11 +124,13 @@
                                                     class="fas fa-pencil-alt"></i>
                                                 Edit
                                             </a>
-                                            <a class="btn btn-danger btn-sm"
-                                                href="/deleteuser/<%= user.id %>">
+                                            <button
+                                                class="btn btn-danger btn-sm btn-delete"
+                                                data-id="<%= user.id %>">
                                                 <i class="fas fa-trash"></i>
                                                 Delete
-                                            </a>
+                                            </button>
+
                                         </td>
                                     </tr>
                                     <% }); %>
@@ -145,5 +150,30 @@
         </div>
 
         <%- include('partials/scripts') %>
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const deleteButtons = document.querySelectorAll('.btn-delete');
+
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const userId = this.getAttribute('data-id');
+
+      swal({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        buttons: ["Cancel", "Yes, delete it!"],
+        dangerMode: true,
+      })
+      .then((willDelete) => {
+        if (willDelete) {
+          // Redirect to your Express delete route
+          window.location.href = `/deleteuser/${userId}`;
+        }
+      });
+    });
+  });
+});
+</script>
     </body>
 </html>
