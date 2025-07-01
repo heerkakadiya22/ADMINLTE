@@ -145,10 +145,11 @@
 
                     <!-- Username -->
                     <div class="form-group">
-                      <label>Username</label>
+                      <label for="username">Username</label>
                       <input type="text"
                         class="form-control"
                         name="username"
+                        id="username"
                         placeholder="Username" />
                     </div>
 
@@ -420,7 +421,7 @@ $.validator.addMethod("isoDate", function(value, element) {
 
   $(function() {
   // Define the fields you want to target
-  var requiredFields = ["name", "email", "password", "confirmPassword"];
+  var requiredFields = ["name", "email", "username", "password", "confirmPassword"];
 
   requiredFields.forEach(function(fieldName) {
     var $field = $("#adduser").find("[name='" + fieldName + "']");

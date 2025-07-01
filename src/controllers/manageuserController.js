@@ -169,10 +169,10 @@ exports.insertuser = (req, res) => {
   // Check if username, email, or phone already exists
   const checkSql = `
     SELECT * FROM admin 
-    WHERE username = ? OR email = ? OR phone_no = ?
+    WHERE username = ? OR email = ?
   `;
 
-  db.query(checkSql, [username, email, phone], (err, existingUsers) => {
+  db.query(checkSql, [username, email], (err, existingUsers) => {
     if (err) {
       return renderWithError("Database error while checking existing users.");
     }
@@ -185,8 +185,6 @@ exports.insertuser = (req, res) => {
         conflictMessage = "Username already exists.";
       } else if (existing.email === email) {
         conflictMessage = "Email already exists.";
-      } else if (existing.phone_no === phone) {
-        conflictMessage = "Phone number already exists.";
       }
 
       return renderWithError(conflictMessage);
@@ -398,66 +396,55 @@ exports.updateUser = (req, res) => {
     // ✅ Check uniqueness of username/email/phone
     const checkSql = `
       SELECT * FROM admin
-      WHERE (username = ? OR email = ? OR phone_no = ?) AND id != ?
+      WHERE (username = ? OR email = ?) AND id != ?
     `;
-    db.query(
-      checkSql,
-      [username, email, phone, id],
-      (checkErr, checkResults) => {
-        if (checkErr) {
-          return renderWithError(
-            "Database error while checking unique fields."
-          );
+    db.query(checkSql, [username, email, id], (checkErr, checkResults) => {
+      if (checkErr) {
+        return renderWithError("Database error while checking unique fields.");
+      }
+
+      if (checkResults.length) {
+        const existing = checkResults[0];
+        let conflictMessage =
+          "A user with the same credentials already exists.";
+
+        if (existing.username === username) {
+          conflictMessage = "Username already exists.";
+        } else if (existing.email === email) {
+          conflictMessage = "Email already exists.";
         }
+        return renderWithError(conflictMessage);
+      }
 
-        if (checkResults.length) {
-          const existing = checkResults[0];
-          let conflictMessage =
-            "A user with the same credentials already exists.";
-
-          if (existing.username === username) {
-            conflictMessage = "Username already exists.";
-          } else if (existing.email === email) {
-            conflictMessage = "Email already exists.";
-          } else if (existing.phone_no === phone) {
-            conflictMessage = "Phone number already exists.";
-          }
-
-          return renderWithError(conflictMessage);
-        }
-
-        // ✅ No conflicts - Update the user
-        const updateSql = `
+      // ✅ No conflicts - Update the user
+      const updateSql = `
         UPDATE admin SET 
           name = ?, email = ?, username = ?, image = ?,
           address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
         WHERE id = ?
       `;
-        const values = [
-          name,
-          email,
-          username,
-          imageToUse,
-          address,
-          formattedDob,
-          gender,
-          phone,
-          hobbyString,
-          id,
-        ];
+      const values = [
+        name,
+        email,
+        username,
+        imageToUse,
+        address,
+        formattedDob,
+        gender,
+        phone,
+        hobbyString,
+        id,
+      ];
 
-        db.query(updateSql, values, (updateErr, updateResult) => {
-          if (updateErr || updateResult.affectedRows === 0) {
-            return renderWithError(
-              "Database update failed or no changes made."
-            );
-          }
+      db.query(updateSql, values, (updateErr, updateResult) => {
+        if (updateErr || updateResult.affectedRows === 0) {
+          return renderWithError("Database update failed or no changes made.");
+        }
 
-          req.session.success = "User updated successfully.";
-          return res.redirect("/manageuser");
-        });
-      }
-    );
+        req.session.success = "User updated successfully.";
+        return res.redirect("/manageuser");
+      });
+    });
 
     function renderWithError(errorMessage) {
       res.render("edituser", {

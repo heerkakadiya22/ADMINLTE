@@ -80,10 +80,10 @@
                     </div><!-- /.container-fluid -->
                 </section>
                 <section class="content">
-                    <div class="container-fluid">
-                        <div class="row">
+                    <!-- <div class="container-fluid">
+                        <div class="row"> -->
 
-                            <!-- Profile Card (Left) -->
+                    <!-- Profile Card (Left) 
                             <div class="col-md-3">
                                 <div class="card card-primary card-outline">
                                     <div class="card-body box-profile">
@@ -119,195 +119,200 @@
                                             class="btn btn-primary btn-block"><b>Follow</b></a>
                                     </div>
                                 </div>
+                            </div>-->
+
+                    <!-- Profile Edit Form (Right) -->
+
+                    <div class="card">
+                        <div class="card-body">
+
+                            <% if (error) { %>
+                            <div id="errorMsg"
+                                class="alert alert-danger">
+                                <%= error %>
                             </div>
+                            <% } %>
 
-                            <!-- Profile Edit Form (Right) -->
-                            <div class="col-md-9">
-                                <div class="card">
-                                    <div class="card-body">
+                            <% if (success) { %>
+                            <div id="successMsg"
+                                class="alert alert-success">
+                                <%= success %>
+                            </div>
+                            <% } %>
 
-                                        <% if (error) { %>
-                                        <div id="errorMsg"
-                                            class="alert alert-danger">
-                                            <%= error %>
+                            <form action="/editprofile"
+                                method="POST"
+                                enctype="multipart/form-data"
+                                id="editProfileForm" novalidate>
+
+                                <div class="text-center mb-4">
+                                    <div
+                                        class="profile-image-wrapper">
+                                        <img src="<%= image %>"
+                                            alt="User Avatar"
+                                            id="previewImg" />
+                                        <label for="imageUpload">
+                                            <i
+                                                class="fas fa-camera text-white"></i>
+                                        </label>
+                                        <input type="file"
+                                            id="imageUpload"
+                                            name="image"
+                                            accept="image/*" />
+                                    </div>
+                                </div>
+
+                                <!-- Name -->
+                                <div class="form-group">
+                                    <label for="name">Full
+                                        Name</label>
+                                    <input type="text"
+                                        class="form-control"
+                                        name="name"
+                                        id="name"
+                                        placeholder="Full Name"
+                                        value="<%= name %>"
+                                        required />
+                                </div>
+
+                                <!-- Email & Phone -->
+                                <div class="form-row">
+                                    <div
+                                        class="form-group col-md-6">
+                                        <label
+                                            for="email">Email</label>
+                                        <input type="email"
+                                            class="form-control"
+                                            name="email"
+                                            id="email"
+                                            placeholder="Email"
+                                            value="<%= email %>"
+                                            required />
+                                    </div>
+                                    <div
+                                        class="form-group col-md-6">
+                                        <label>Phone Number</label>
+                                        <input type="text"
+                                            class="form-control"
+                                            name="phone"
+                                            placeholder="Phone Number"
+                                            value="<%= phone %>" />
+                                    </div>
+                                </div>
+
+                                <!-- Username -->
+                                <div class="form-group">
+                                    <label
+                                        for="username">Username</label>
+                                    <input type="text"
+                                        class="form-control"
+                                        name="username"
+                                        id="username"
+                                        placeholder="Username"
+                                        value="<%= username %>"
+                                        required />
+                                </div>
+
+                                <!-- Address -->
+                                <div class="form-group">
+                                    <label>Address</label>
+                                    <textarea name="address"
+                                        class="form-control"
+                                        placeholder="Address"><%= address %></textarea>
+                                </div>
+
+                                <!-- DOB & Gender -->
+                                <div class="form-row">
+                                    <div
+                                        class="form-group col-md-6">
+                                        <label>Date of Birth</label>
+                                        <input type="date"
+                                            value="<%= dob %>"
+                                            class="form-control"
+                                            name="dob"
+                                            placeholder="Date of Birth" />
+                                    </div>
+                                    <div
+                                        class="form-group col-md-6">
+                                        <label>Gender</label><br />
+                                        <div
+                                            class="form-check form-check-inline">
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="gender"
+                                                value="Male"
+                                                <%=gender === 'Male'
+                                                ? 'checked' : '' %>
+                                            />
+                                            <label
+                                                class="form-check-label">Male</label>
                                         </div>
-                                        <% } %>
-
-                                        <% if (success) { %>
-                                        <div id="successMsg"
-                                            class="alert alert-success">
-                                            <%= success %>
-                                        </div>
-                                        <% } %>
-
-                                        <form action="/editprofile"
-                                            method="POST"
-                                            enctype="multipart/form-data"
-                                            id="editProfileForm" novalidate>
-
-                                            <div class="text-center mb-4">
-                                                <div
-                                                    class="profile-image-wrapper">
-                                                    <img src="<%= image %>"
-                                                        alt="User Avatar"
-                                                        id="previewImg" />
-                                                    <label for="imageUpload">
-                                                        <i
-                                                            class="fas fa-camera text-white"></i>
-                                                    </label>
-                                                    <input type="file"
-                                                        id="imageUpload"
-                                                        name="image"
-                                                        accept="image/*" />
-                                                </div>
-                                            </div>
-
-                                            <!-- Name -->
-                                            <div class="form-group">
-                                                <label>Full Name</label>
-                                                <input type="text"
-                                                    class="form-control"
-                                                    name="name"
-                                                    placeholder="Full Name"
-                                                    value="<%= name %>"
-                                                    required />
-                                            </div>
-
-                                            <!-- Email & Phone -->
-                                            <div class="form-row">
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Email</label>
-                                                    <input type="email"
-                                                        class="form-control"
-                                                        name="email"
-                                                        placeholder="Email"
-                                                        value="<%= email %>"
-                                                        required />
-                                                </div>
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Phone Number</label>
-                                                    <input type="text"
-                                                        class="form-control"
-                                                        name="phone"
-                                                        placeholder="Phone Number"
-                                                        value="<%= phone %>" />
-                                                </div>
-                                            </div>
-
-                                            <!-- Username -->
-                                            <div class="form-group">
-                                                <label>Username</label>
-                                                <input type="text"
-                                                    class="form-control"
-                                                    name="username"
-                                                    placeholder="Username"
-                                                    value="<%= username %>"
-                                                    required />
-                                            </div>
-
-                                            <!-- Address -->
-                                            <div class="form-group">
-                                                <label>Address</label>
-                                                <textarea name="address"
-                                                    class="form-control"
-                                                    placeholder="Address"><%= address %></textarea>
-                                            </div>
-
-                                            <!-- DOB & Gender -->
-                                            <div class="form-row">
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Date of Birth</label>
-                                                    <input type="date"
-                                                        value="<%= dob %>"
-                                                        class="form-control"
-                                                        name="dob"
-                                                        placeholder="Date of Birth" />
-                                                </div>
-                                                <div
-                                                    class="form-group col-md-6">
-                                                    <label>Gender</label><br />
-                                                    <div
-                                                        class="form-check form-check-inline">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="radio"
-                                                            name="gender"
-                                                            value="Male"
-                                                            <%=gender === 'Male'
-                                                            ? 'checked' : '' %>
-                                                        />
-                                                        <label
-                                                            class="form-check-label">Male</label>
-                                                    </div>
-                                                    <div
-                                                        class="form-check form-check-inline">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="radio"
-                                                            name="gender"
-                                                            value="Female"
-                                                            <%=gender ===
-                                                            'Female' ? 'checked'
-                                                            : '' %> />
-                                                        <label
-                                                            class="form-check-label">Female</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Hobby -->
-                                            <div class="form-group">
-                                                <label>Hobby</label><br />
-                                                <% const hobbiesList = [
-                                                "Singing", "Dancing",
-                                                "Travelling", "Drawing",
-                                                "Gym","Hike",
-                                                "Gaming", "Sports", "Coding",
-                                                "Other"
-                                                ]; %>
-
-                                                <% hobbiesList.forEach(h => { %>
-                                                <div
-                                                    class="form-check form-check-inline">
-                                                    <input
-                                                        class="form-check-input"
-                                                        type="checkbox"
-                                                        name="hobby"
-                                                        value="<%= h %>"
-                                                        <%=Array.isArray(hobby)
-                                                        && hobby.includes(h) ?
-                                                        "checked" : "" %>
-                                                    />
-                                                    <label
-                                                        class="form-check-label"><%=
-                                                        h %></label>
-                                                </div>
-                                                <% }); %>
-                                            </div>
-
-                                            <!-- Submit -->
-                                            <div
-                                                class="form-group text-center mt-4">
-                                                <button type="submit"
-                                                    class="btn btn-success btn-lg w-100">Save
-                                                    Changes</button>
-                                            </div>
-                                        </form>
-
-                                        <div class="text-center mt-2">
-                                            <a href="/index"
-                                                class="text-muted">← Back to
-                                                Home</a>
+                                        <div
+                                            class="form-check form-check-inline">
+                                            <input
+                                                class="form-check-input"
+                                                type="radio"
+                                                name="gender"
+                                                value="Female"
+                                                <%=gender ===
+                                                'Female' ? 'checked'
+                                                : '' %> />
+                                            <label
+                                                class="form-check-label">Female</label>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
+                                <!-- Hobby -->
+                                <div class="form-group">
+                                    <label>Hobby</label><br />
+                                    <% const hobbiesList = [
+                                    "Singing", "Dancing",
+                                    "Travelling", "Drawing",
+                                    "Gym","Hike",
+                                    "Gaming", "Sports", "Coding",
+                                    "Other"
+                                    ]; %>
+
+                                    <% hobbiesList.forEach(h => { %>
+                                    <div
+                                        class="form-check form-check-inline">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            name="hobby"
+                                            value="<%= h %>"
+                                            <%=Array.isArray(hobby)
+                                            && hobby.includes(h) ?
+                                            "checked" : "" %>
+                                        />
+                                        <label
+                                            class="form-check-label"><%=
+                                            h %></label>
+                                    </div>
+                                    <% }); %>
+                                </div>
+
+                                <!-- Submit -->
+                                <div
+                                    class="form-group text-center mt-4">
+                                    <button type="submit"
+                                        class="btn btn-success btn-lg w-100">Save
+                                        Changes</button>
+                                </div>
+                            </form>
+
+                            <div class="text-center mt-2">
+                                <a href="/index"
+                                    class="text-muted">← Back to
+                                    Home</a>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- </div>
+                    </div> -->
                 </section>
             </div>
         </div>
@@ -346,7 +351,58 @@
       }, 5000); 
     }
   });
-
     </script>
+        <!-- Load jQuery -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        <script>
+$(function() {
+  console.log("✅ Asterisk script running.");
+
+  $("<style>")
+    .prop("type", "text/css")
+    .html(".required-star { color: red; margin-left: 3px; }")
+    .appendTo("head");
+
+  var requiredFields = ["name", "email", "username"];
+
+  requiredFields.forEach(function(fieldName) {
+    var $field = $("#editProfileForm").find("[name='" + fieldName + "']");
+    var id = $field.attr("id");
+    var $label;
+
+    console.log("Checking field:", fieldName, "ID:", id);
+
+    if (id) {
+      $label = $("label[for='" + id + "']");
+    }
+
+    if (!$label || $label.length === 0) {
+      $label = $field.closest(".form-group").find("label").first();
+    }
+
+    if (!$label || $label.length === 0) {
+      console.warn("No label found for field:", fieldName);
+      return;
+    }
+
+    var $asterisk = $('<span class="required-star">*</span>');
+    $label.append($asterisk);
+
+    if ($field.val().trim() !== "") {
+      $asterisk.hide();
+    }
+
+    $field.on("input change", function() {
+      if ($field.val().trim() === "") {
+        $asterisk.fadeIn();
+      } else {
+        $asterisk.fadeOut();
+      }
+    });
+  });
+});
+</script>
+
     </body>
 </html>

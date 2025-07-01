@@ -89,29 +89,57 @@ exports.updateProfile = (req, res) => {
     const currentImage = result[0].image || "profile-user.png";
     const imageToUse = newImage || currentImage;
 
+    // ✅ Delete the old image if new one uploaded and it's not default
+    if (newImage && currentImage !== "profile-user.png") {
+      const fs = require("fs");
+      const path = require("path");
+      const oldImagePath = path.join(
+        __dirname,
+        "../assets/image/uploads",
+        currentImage
+      );
+
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlink(oldImagePath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error("Error deleting old image:", unlinkErr);
+          } else {
+            console.log("Old image deleted successfully:", oldImagePath);
+          }
+        });
+      } else {
+        console.log("Old image file not found to delete:", oldImagePath);
+      }
+    }
+
+    // ✅ Normalize hobbies
     if (!hobby) {
       hobby = [];
     } else if (!Array.isArray(hobby)) {
       hobby = [hobby];
     }
-
     const hobbyString = hobby.join(",");
 
-    const checkSql =
-      "SELECT * FROM admin WHERE (username = ? OR phone_no = ?) AND id != ?";
-    db.query(checkSql, [username, phone, id], (err, checkResults) => {
-      if (err)
+    // ✅ Check for duplicate username or phone
+    const checkSql = `
+      SELECT * FROM admin 
+      WHERE (username = ? OR email = ?) AND id != ?
+    `;
+    db.query(checkSql, [username, email, id], (err, checkResults) => {
+      if (err) {
         return renderWithError("Database error while checking unique fields.");
+      }
 
       if (checkResults.length) {
         const existing = checkResults[0];
         const conflictMessage =
           existing.username === username
             ? "Username already exists."
-            : "Phone number already exists.";
+            : "email already exists.";
         return renderWithError(conflictMessage);
       }
 
+      // ✅ Update profile
       const updateSql = `
         UPDATE admin SET 
           name = ?, 
@@ -125,7 +153,6 @@ exports.updateProfile = (req, res) => {
           hobby = ?
         WHERE id = ?
       `;
-
       const values = [
         name,
         email,
@@ -144,21 +171,22 @@ exports.updateProfile = (req, res) => {
           return renderWithError("Database update failed.");
         }
 
+        // ✅ Update session data
         req.session.name = name;
         req.session.email = email;
         req.session.image = imageToUse;
-        console.log("Setting successMsg");
         req.session.successMsg = "Profile updated successfully.";
 
         req.session.save((err) => {
           if (err) {
             console.error("Session save error:", err);
           }
-
           res.redirect("/editprofile");
         });
       });
     });
+
+    // ✅ Helper to render with error
     function renderWithError(errorMessage) {
       res.render("editProfile", {
         name,
@@ -172,6 +200,7 @@ exports.updateProfile = (req, res) => {
         image: "/src/assets/image/uploads/" + imageToUse,
         error: errorMessage,
         success: null,
+        csrfToken: req.csrfToken(),
         currentPage: "editprofile",
       });
     }
