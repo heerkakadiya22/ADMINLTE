@@ -335,6 +335,7 @@ $.validator.addMethod("isoDate", function(value, element) {
         },
         phone: {
           digits: true,
+          minlength: 10,
           maxlength: 10,
         },
         address: {
@@ -374,6 +375,7 @@ $.validator.addMethod("isoDate", function(value, element) {
         phone: {
           digits: "Only digits allowed.",
           maxlength: "Phone cannot exceed 10 digits.",
+          minlength: "phone cannot less 10 digits.",
         },
         address: {
           maxlength: "Address must be less than 200 characters.",

@@ -12,12 +12,13 @@
         margin: 50px auto;
       }
 
-      label.error {
-        color: red;
-        font-size: 14px;
-        margin-top: -8px;
-        display: block;
-      }
+       label.error {
+  color: red;
+  font-size: 14px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  display: block;
+}
 
       .profile-image-wrapper {
         position: relative;
@@ -66,14 +67,15 @@
                     <div class="container-fluid">
                         <div class="row mb-2">
                             <div class="col-sm-6">
-                                <h1>Profile</h1>
+                                <h1>Edit User</h1>
                             </div>
                             <div class="col-sm-6">
                                 <ol class="breadcrumb float-sm-right">
                                     <li class="breadcrumb-item"><a
                                             href="#">Home</a></li>
-                                    <li class="breadcrumb-item active">User
-                                        Profile</li>
+                                    <li class="breadcrumb-item">users</li>
+                                    <li class="breadcrumb-item active">edit
+                                        user</li>
                                 </ol>
                             </div>
                         </div>
@@ -137,7 +139,7 @@
                             <form action="/edituser"
                                 method="POST"
                                 enctype="multipart/form-data"
-                                id="editProfileForm" novalidate>
+                                id="edituser" novalidate>
 
                                 <input type="hidden" name="id"
                                     value="<%= editId %>">
@@ -343,7 +345,7 @@
   var requiredFields = ["name", "email", "username"];
 
   requiredFields.forEach(function(fieldName) {
-    var $field = $("#editProfileForm").find("[name='" + fieldName + "']");
+    var $field = $("#edituser").find("[name='" + fieldName + "']");
     var id = $field.attr("id");
 
     if (id) {
@@ -371,5 +373,115 @@
 });
 
     </script>
+
+        <!-- ✅ jQuery Validate -->
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+        <script>
+  // Custom pattern rule
+  $.validator.addMethod("pattern", function (value, element, param) {
+    if (this.optional(element)) return true;
+    if (typeof param === "string") {
+      param = new RegExp(param);
+    }
+    return param.test(value);
+  }, "Invalid format.");
+
+  $.validator.addMethod("genderValid", function(value, element) {
+  if (value === "") {
+    return true; // allow empty
+  }
+  return value === "Male" || value === "Female";
+}, "Gender must be Male or Female");
+
+$.validator.addMethod("isoDate", function(value, element) {
+  if (value === "") {
+    return true; // allow empty
+  }
+  // Simple regex for YYYY-MM-DD format
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}, "Please enter a valid date (YYYY-MM-DD)");
+
+
+  $(function () {
+    $("#edituser").validate({
+      rules: {
+        name: {
+          required: true,
+          pattern: "^[A-Za-z ]+$",
+        },
+        email: {
+          required: true,
+          email: true,
+        },
+        phone: {
+          digits: true,
+          minlength:10,
+          maxlength: 10,
+        },
+        address: {
+          maxlength: 200,
+        },
+        username: {
+          minlength: 4,
+        },
+          gender: {
+      genderValid: true
+    },
+    hobby: {
+    },
+    dob: {
+      isoDate: true
+    },
+      },
+      messages: {
+        name: {
+          required: "Name is required.",
+          pattern: "Name must contain only letters.",
+        },
+        email: {
+          required: "Email is required.",
+          email: "Enter a valid email address.",
+        },
+        phone: {
+          digits: "Only digits allowed.",
+            maxlength: "Phone cannot exceed 10 digits.",
+          minlength: "phone cannot less 10 digits.",
+        },
+        address: {
+          maxlength: "Address must be less than 200 characters.",
+        },
+        username: {
+          minlength: "Username must be at least 4 characters",
+        },
+        gender: {
+      genderValid: "Gender must be Male or Female"
+    },
+      dob: {
+      isoDate: "Please enter a valid date in YYYY-MM-DD format"
+    }
+      },
+      errorElement: "label",
+      errorClass: "error",
+      highlight: function (element) {
+        $(element).addClass("is-invalid");
+      },
+      unhighlight: function (element) {
+        $(element).removeClass("is-invalid");
+      },
+      errorPlacement: function (error, element) {
+  if (element.attr("name") === "gender") {
+    // Append error after the last radio button inside the same form-group
+    element.closest('.form-group').find('.form-check').last().after(error);
+  } else if (element.closest(".input-group").length > 0) {
+    error.insertAfter(element.closest(".input-group"));
+  } else {
+    error.insertAfter(element);
+  }
+}
+    });
+  });
+  </script>
     </body>
 </html>

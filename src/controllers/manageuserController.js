@@ -5,6 +5,7 @@ const fs = require("fs");
 exports.getalluser = (req, res) => {
   const id = req.session.adminId;
 
+  // Select only the current logged-in admin
   const sql = "SELECT * FROM admin WHERE id = ?";
   db.query(sql, [id], (err, result) => {
     if (err || result.length === 0) {
@@ -13,10 +14,6 @@ exports.getalluser = (req, res) => {
         name: "",
         image: "/src/assets/image/uploads/profile-user.png",
         user: [],
-        currentPage: "manageuser",
-        success: null,
-        search: "",
-        pagination: { page: 1, totalPages: 1, limit: 5 },
       });
     }
 
@@ -27,90 +24,27 @@ exports.getalluser = (req, res) => {
     const successMessage = req.session.success;
     req.session.success = null;
 
-    // Get query parameters
-    const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 5;
-    const search = req.query.search ? req.query.search.trim() : "";
-
-    // Validate limit (avoid abuse)
-    const allowedLimits = [5, 10, 20, 50];
-    if (!allowedLimits.includes(limit)) {
-      limit = 5;
-    }
-
-    const offset = (page - 1) * limit;
-
-    let countSql = "SELECT COUNT(*) AS count FROM admin";
-    let dataSql = "SELECT * FROM admin";
-    const queryParams = [];
-    const countParams = [];
-
-    // If search, add WHERE
-    if (search) {
-      countSql +=
-        " WHERE name LIKE ? OR email LIKE ? OR username LIKE ? OR address LIKE ?";
-      dataSql +=
-        " WHERE name LIKE ? OR email LIKE ? OR username LIKE ? OR address LIKE ?";
-      queryParams.push(
-        `%${search}%`,
-        `%${search}%`,
-        `%${search}%`,
-        `%${search}%`
-      );
-      countParams.push(
-        `%${search}%`,
-        `%${search}%`,
-        `%${search}%`,
-        `%${search}%`
-      );
-    }
-
-    dataSql += " ORDER BY id DESC LIMIT ? OFFSET ?";
-    queryParams.push(limit, offset);
-
-    // Count total records
-    db.query(countSql, countParams, (countErr, countResult) => {
-      if (countErr) {
+    // Now fetch all users for display in table
+    const userSql = "SELECT * FROM admin";
+    db.query(userSql, (userErr, userResult) => {
+      if (userErr) {
         return res.render("manageuser", {
           csrfToken: req.csrfToken(),
           name: admin.name,
           image: imagePath,
           user: [],
-          success: successMessage,
+          success: req.session.success,
           currentPage: "manageuser",
-          search,
-          pagination: { page: 1, totalPages: 1, limit },
         });
       }
 
-      const totalRecords = countResult[0].count;
-      const totalPages = Math.ceil(totalRecords / limit) || 1;
-
-      // Fetch paginated data
-      db.query(dataSql, queryParams, (dataErr, userResult) => {
-        if (dataErr) {
-          return res.render("manageuser", {
-            csrfToken: req.csrfToken(),
-            name: admin.name,
-            image: imagePath,
-            user: [],
-            success: successMessage,
-            currentPage: "manageuser",
-            search,
-            pagination: { page: 1, totalPages: 1, limit },
-          });
-        }
-
-        res.render("manageuser", {
-          csrfToken: req.csrfToken(),
-          name: admin.name,
-          image: imagePath,
-          user: userResult,
-          success: successMessage,
-          currentPage: "manageuser",
-          search,
-          pagination: { page, totalPages, limit },
-        });
+      return res.render("manageuser", {
+        csrfToken: req.csrfToken(),
+        name: admin.name,
+        image: imagePath,
+        user: userResult,
+        success: successMessage,
+        currentPage: "manageuser",
       });
     });
   });
@@ -307,6 +241,17 @@ exports.showedituser = (req, res) => {
         ? "/src/assets/image/uploads/" + currentUser.image
         : "/src/assets/image/uploads/profile-user.png";
 
+      const dobformat =
+        selectedUser.dob && !isNaN(new Date(selectedUser.dob))
+          ? (() => {
+              const dateObj = new Date(selectedUser.dob);
+              const yyyy = dateObj.getFullYear();
+              const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+              const dd = String(dateObj.getDate()).padStart(2, "0");
+              return `${yyyy}-${mm}-${dd}`;
+            })()
+          : "";
+
       const successMessage = req.session.success;
       delete req.session.success;
 
@@ -324,10 +269,7 @@ exports.showedituser = (req, res) => {
         editPhone: selectedUser.phone_no,
         editUsername: selectedUser.username,
         editAddress: selectedUser.address,
-        editDob:
-          selectedUser.dob && !isNaN(new Date(selectedUser.dob))
-            ? new Date(selectedUser.dob).toISOString().split("T")[0]
-            : "",
+        editDob: dobformat,
 
         editGender: selectedUser.gender,
         editHobby: selectedUser.hobby ? selectedUser.hobby.split(",") : [],
