@@ -5,7 +5,6 @@ const fs = require("fs");
 exports.getalluser = (req, res) => {
   const id = req.session.adminId;
 
-  // Select only the current logged-in admin
   const sql = "SELECT * FROM admin WHERE id = ?";
   db.query(sql, [id], (err, result) => {
     if (err || result.length === 0) {
@@ -14,6 +13,10 @@ exports.getalluser = (req, res) => {
         name: "",
         image: "/src/assets/image/uploads/profile-user.png",
         user: [],
+        currentPage: "manageuser",
+        success: null,
+        search: "",
+        pagination: { page: 1, totalPages: 1, limit: 5 },
       });
     }
 
@@ -24,27 +27,90 @@ exports.getalluser = (req, res) => {
     const successMessage = req.session.success;
     req.session.success = null;
 
-    // Now fetch all users for display in table
-    const userSql = "SELECT * FROM admin";
-    db.query(userSql, (userErr, userResult) => {
-      if (userErr) {
+    // Get query parameters
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 5;
+    const search = req.query.search ? req.query.search.trim() : "";
+
+    // Validate limit (avoid abuse)
+    const allowedLimits = [5, 10, 20, 50];
+    if (!allowedLimits.includes(limit)) {
+      limit = 5;
+    }
+
+    const offset = (page - 1) * limit;
+
+    let countSql = "SELECT COUNT(*) AS count FROM admin";
+    let dataSql = "SELECT * FROM admin";
+    const queryParams = [];
+    const countParams = [];
+
+    // If search, add WHERE
+    if (search) {
+      countSql +=
+        " WHERE name LIKE ? OR email LIKE ? OR username LIKE ? OR address LIKE ?";
+      dataSql +=
+        " WHERE name LIKE ? OR email LIKE ? OR username LIKE ? OR address LIKE ?";
+      queryParams.push(
+        `%${search}%`,
+        `%${search}%`,
+        `%${search}%`,
+        `%${search}%`
+      );
+      countParams.push(
+        `%${search}%`,
+        `%${search}%`,
+        `%${search}%`,
+        `%${search}%`
+      );
+    }
+
+    dataSql += " ORDER BY id DESC LIMIT ? OFFSET ?";
+    queryParams.push(limit, offset);
+
+    // Count total records
+    db.query(countSql, countParams, (countErr, countResult) => {
+      if (countErr) {
         return res.render("manageuser", {
           csrfToken: req.csrfToken(),
           name: admin.name,
           image: imagePath,
           user: [],
-          success: req.session.success,
+          success: successMessage,
           currentPage: "manageuser",
+          search,
+          pagination: { page: 1, totalPages: 1, limit },
         });
       }
 
-      return res.render("manageuser", {
-        csrfToken: req.csrfToken(),
-        name: admin.name,
-        image: imagePath,
-        user: userResult,
-        success: successMessage,
-        currentPage: "manageuser",
+      const totalRecords = countResult[0].count;
+      const totalPages = Math.ceil(totalRecords / limit) || 1;
+
+      // Fetch paginated data
+      db.query(dataSql, queryParams, (dataErr, userResult) => {
+        if (dataErr) {
+          return res.render("manageuser", {
+            csrfToken: req.csrfToken(),
+            name: admin.name,
+            image: imagePath,
+            user: [],
+            success: successMessage,
+            currentPage: "manageuser",
+            search,
+            pagination: { page: 1, totalPages: 1, limit },
+          });
+        }
+
+        res.render("manageuser", {
+          csrfToken: req.csrfToken(),
+          name: admin.name,
+          image: imagePath,
+          user: userResult,
+          success: successMessage,
+          currentPage: "manageuser",
+          search,
+          pagination: { page, totalPages, limit },
+        });
       });
     });
   });
@@ -289,7 +355,7 @@ exports.updateUser = (req, res) => {
 
   const newImage = req.file ? req.file.filename : null;
 
-  // Get the existing image
+  // Get the existing image filename from DB
   const getImageSql = "SELECT image FROM admin WHERE id = ?";
   db.query(getImageSql, [id], (err, result) => {
     if (err || result.length === 0) {
@@ -299,18 +365,37 @@ exports.updateUser = (req, res) => {
     const existingImage = result[0].image || "profile-user.png";
     const imageToUse = newImage || existingImage;
 
+    // ✅ If new image uploaded and old image is not default, delete old file
+    if (newImage && existingImage !== "profile-user.png") {
+      const fs = require("fs");
+      const path = require("path");
+      const oldImagePath = path.join(
+        __dirname,
+        "../assets/image/uploads",
+        existingImage
+      );
+
+      fs.unlink(oldImagePath, (unlinkErr) => {
+        if (unlinkErr && unlinkErr.code !== "ENOENT") {
+          console.error("Error deleting old image:", unlinkErr);
+        }
+      });
+    }
+
+    // Convert hobbies to comma-separated string
     let hobbyArray = [];
     if (hobby) {
       hobbyArray = Array.isArray(hobby) ? hobby : [hobby];
     }
     const hobbyString = hobbyArray.join(",");
 
+    // Format date of birth
     let formattedDob = null;
     if (dob) {
       formattedDob = new Date(dob).toISOString().split("T")[0];
     }
 
-    // ✅ Check if username, email, or phone already exist in other users
+    // ✅ Check uniqueness of username/email/phone
     const checkSql = `
       SELECT * FROM admin
       WHERE (username = ? OR email = ? OR phone_no = ?) AND id != ?
@@ -341,7 +426,7 @@ exports.updateUser = (req, res) => {
           return renderWithError(conflictMessage);
         }
 
-        // No conflicts - proceed to update
+        // ✅ No conflicts - Update the user
         const updateSql = `
         UPDATE admin SET 
           name = ?, email = ?, username = ?, image = ?,
@@ -376,7 +461,6 @@ exports.updateUser = (req, res) => {
 
     function renderWithError(errorMessage) {
       res.render("edituser", {
-        // logged-in admin info
         name: req.session.name,
         image: req.session.image,
 

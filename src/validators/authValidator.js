@@ -5,7 +5,7 @@ exports.reValidation = [
     .notEmpty()
     .withMessage("All field are required"),
   body("name")
-    .matches(/^[a-zA-Z]+$/)
+    .matches(/^[A-Za-z ]+$/)
     .withMessage("Name must contain only letters"),
   body("email").isEmail().withMessage("Invalid email format"),
   body("password")
@@ -85,7 +85,7 @@ exports.addUserValidation = [
   // Name
   body("name")
     .notEmpty()
-    .matches(/^[a-zA-Z]+$/)
+    .matches(/^[A-Za-z ]+$/)
     .withMessage("Name must contain only letter"),
 
   // Email

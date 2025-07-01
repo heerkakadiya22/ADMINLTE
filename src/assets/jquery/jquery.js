@@ -13,7 +13,7 @@ $(document).ready(function () {
     rules: {
       name: {
         required: true,
-        pattern: /^[a-zA-Z]+$/,
+        pattern: /^[A-Za-z ]+$/,
       },
       email: {
         required: true,

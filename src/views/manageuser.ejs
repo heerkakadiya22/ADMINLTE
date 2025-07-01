@@ -39,16 +39,81 @@
                 <!-- Main content -->
                 <section class="content">
                     <div class="card">
-                        <div class="card-header">
+                        <div
+                            class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                            <h3 class="card-title mb-2 mb-md-0">
 
-                            <h3 class="card-title">All Registered Users</h3>
-                            <div class="card-tools">
+                                <a href="/manageuser"
+                                    style="color: black;">All
+                                    Registered
+                                    Users</a></h3>
+
+                            <div class="d-flex flex-wrap align-items-center"
+                                style="    margin-left: 49%;">
+
+                                <form method="get" id="recordForm"
+                                    style="margin-right: 2%;">
+                                    <select name="limit" id="limit"
+                                        class="form-control mr-2"
+                                        onchange="document.getElementById('recordForm').submit();">
+                                        <option value="5"
+                                            <%=pagination.limit ==
+                                            5 ? 'selected' : ''
+                                            %>>5</option>
+                                        <option value="10"
+                                            <%=pagination.limit
+                                            == 10 ? 'selected' : ''
+                                            %>>10</option>
+                                        <option value="20"
+                                            <%=pagination.limit
+                                            == 20 ? 'selected' : ''
+                                            %>>20</option>
+                                        <option value="50"
+                                            <%=pagination.limit
+                                            == 50 ? 'selected' : ''
+                                            %>>50</option>
+                                    </select>
+
+                                    <% if (search) { %>
+                                    <input type="hidden" name="search"
+                                        value="<%= search %>">
+                                    <% } %>
+                                    <% if (pagination.page) { %>
+                                    <input type="hidden" name="page"
+                                        value="<%= pagination.page %>">
+                                    <% } %>
+                                </form>
+
+                                <!-- Search Form -->
+                                <form method="GET" action="/manageuser"
+                                    class="form-inline mr-2 mb-2 mb-md-0">
+                                    <div class="input-group">
+                                        <input
+                                            type="text"
+                                            name="search"
+                                            class="form-control"
+                                            placeholder="Search"
+                                            value="<%= search %>" />
+                                        <div class="input-group-append">
+                                            <button type="submit"
+                                                class="btn btn-secondary">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <!-- Add User Button -->
                                 <a href="/adduser"
-                                    class="btn btn-primary btn-sm">
-                                    <i class="fas fa-user-plus"></i> Add User
+                                    class="btn btn-primary mr-2 mb-2 mb-md-0">
+                                    <i class="nav-icon fas fa-user-plus"></i>
+                                    Add User
                                 </a>
+
+                                <!-- Collapse Button -->
                                 <button type="button" class="btn btn-tool"
-                                    data-card-widget="collapse">
+                                    data-card-widget="collapse"
+                                    style="    margin-left: -2%;">
                                     <i class="fas fa-minus"></i>
                                 </button>
                             </div>
@@ -143,6 +208,49 @@
                                     <% } %>
                                 </tbody>
                             </table>
+                            <nav aria-label="Page navigation"
+                                style="margin-top: 10px; margin-left: 43%;">
+                                <ul class="pagination">
+                                    <% if (pagination.page > 1) { %>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="/manageuser?page=<%= pagination.page - 1 %>&limit=<%= pagination.limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                                            Previous
+                                        </a>
+                                    </li>
+                                    <% } else { %>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Previous</span>
+                                    </li>
+                                    <% } %>
+
+                                    <% for (let i = 1; i <=
+                                    pagination.totalPages; i++) { %>
+                                    <li
+                                        class="page-item <%= i === pagination.page ? 'active' : '' %>">
+                                        <a class="page-link"
+                                            href="/manageuser?page=<%= i %>&limit=<%= pagination.limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                                            <%= i %>
+                                        </a>
+                                    </li>
+                                    <% } %>
+
+                                    <% if (pagination.page <
+                                    pagination.totalPages) { %>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="/manageuser?page=<%= pagination.page + 1 %>&limit=<%= pagination.limit %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                                            Next
+                                        </a>
+                                    </li>
+                                    <% } else { %>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Next</span>
+                                    </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+
                         </div>
                     </div>
                 </section>
