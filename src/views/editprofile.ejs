@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>AdminLTE | Edit Profile</title>
-        <%- include('partials/head') %>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AdminLTE | Edit Profile</title>
+    <%- include('partials/head') %>
 
-        <style>
+    <style>
       .edit-profile-card {
         max-width: 700px;
         margin: 50px auto;
@@ -51,39 +51,39 @@
         display: none;
       }
     </style>
-    </head>
+  </head>
 
-    <body class="hold-transition sidebar-mini layout-fixed">
-        <div class="wrapper">
+  <body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
 
-            <%- include('partials/sidebar', { name: name, csrfToken: typeof
-            csrfToken !== 'undefined' ? csrfToken : null,
-            currentPage: currentPage
-            }) %>
+      <%- include('partials/sidebar', { name: name, csrfToken: typeof
+      csrfToken !== 'undefined' ? csrfToken : null,
+      currentPage: currentPage
+      }) %>
 
-            <div class="content-wrapper">
-                <section class="content-header">
-                    <div class="container-fluid">
-                        <div class="row mb-2">
-                            <div class="col-sm-6">
-                                <h1>Profile</h1>
-                            </div>
-                            <div class="col-sm-6">
-                                <ol class="breadcrumb float-sm-right">
-                                    <li class="breadcrumb-item"><a
-                                            href="#">Home</a></li>
-                                    <li class="breadcrumb-item active">User
-                                        Profile</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div><!-- /.container-fluid -->
-                </section>
-                <section class="content">
-                    <!-- <div class="container-fluid">
+      <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>Profile</h1>
+              </div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                  <li class="breadcrumb-item"><a
+                      href="#">Home</a></li>
+                  <li class="breadcrumb-item active">User
+                    Profile</li>
+                </ol>
+              </div>
+            </div>
+          </div><!-- /.container-fluid -->
+        </section>
+        <section class="content">
+          <!-- <div class="container-fluid">
                         <div class="row"> -->
 
-                    <!-- Profile Card (Left) 
+          <!-- Profile Card (Left) 
                             <div class="col-md-3">
                                 <div class="card card-primary card-outline">
                                     <div class="card-body box-profile">
@@ -121,206 +121,206 @@
                                 </div>
                             </div>-->
 
-                    <!-- Profile Edit Form (Right) -->
+          <!-- Profile Edit Form (Right) -->
 
-                    <div class="card">
-                        <div class="card-body">
+          <div class="card">
+            <div class="card-body">
 
-                            <% if (error) { %>
-                            <div id="errorMsg"
-                                class="alert alert-danger">
-                                <%= error %>
-                            </div>
-                            <% } %>
+              <% if (error) { %>
+              <div id="errorMsg"
+                class="alert alert-danger">
+                <%= error %>
+              </div>
+              <% } %>
 
-                            <% if (success) { %>
-                            <div id="successMsg"
-                                class="alert alert-success">
-                                <%= success %>
-                            </div>
-                            <% } %>
+              <% if (success) { %>
+              <div id="successMsg"
+                class="alert alert-success">
+                <%= success %>
+              </div>
+              <% } %>
 
-                            <form action="/editprofile"
-                                method="POST"
-                                enctype="multipart/form-data"
-                                id="editProfileForm" novalidate>
+              <form action="/editprofile"
+                method="POST"
+                enctype="multipart/form-data"
+                id="editProfileForm" novalidate>
 
-                                <div class="text-center mb-4">
-                                    <div
-                                        class="profile-image-wrapper">
-                                        <img src="<%= image %>"
-                                            alt="User Avatar"
-                                            id="previewImg" />
-                                        <label for="imageUpload">
-                                            <i
-                                                class="fas fa-camera text-white"></i>
-                                        </label>
-                                        <input type="file"
-                                            id="imageUpload"
-                                            name="image"
-                                            accept="image/*" />
-                                    </div>
-                                </div>
+                <div class="text-center mb-4">
+                  <div
+                    class="profile-image-wrapper">
+                    <img src="<%= image %>"
+                      alt="User Avatar"
+                      id="previewImg" />
+                    <label for="imageUpload">
+                      <i
+                        class="fas fa-camera text-white"></i>
+                    </label>
+                    <input type="file"
+                      id="imageUpload"
+                      name="image"
+                      accept="image/*" />
+                  </div>
+                </div>
 
-                                <!-- Name -->
-                                <div class="form-group">
-                                    <label for="name">Full
-                                        Name</label>
-                                    <input type="text"
-                                        class="form-control"
-                                        name="name"
-                                        id="name"
-                                        placeholder="Full Name"
-                                        value="<%= name %>"
-                                        required />
-                                </div>
+                <!-- Name -->
+                <div class="form-group">
+                  <label for="name">Full
+                    Name</label>
+                  <input type="text"
+                    class="form-control"
+                    name="name"
+                    id="name"
+                    placeholder="Full Name"
+                    value="<%= name %>"
+                    required />
+                </div>
 
-                                <!-- Email & Phone -->
-                                <div class="form-row">
-                                    <div
-                                        class="form-group col-md-6">
-                                        <label
-                                            for="email">Email</label>
-                                        <input type="email"
-                                            class="form-control"
-                                            name="email"
-                                            id="email"
-                                            placeholder="Email"
-                                            value="<%= email %>"
-                                            required />
-                                    </div>
-                                    <div
-                                        class="form-group col-md-6">
-                                        <label>Phone Number</label>
-                                        <input type="text"
-                                            class="form-control"
-                                            name="phone"
-                                            placeholder="Phone Number"
-                                            value="<%= phone %>" />
-                                    </div>
-                                </div>
+                <!-- Email & Phone -->
+                <div class="form-row">
+                  <div
+                    class="form-group col-md-6">
+                    <label
+                      for="email">Email</label>
+                    <input type="email"
+                      class="form-control"
+                      name="email"
+                      id="email"
+                      placeholder="Email"
+                      value="<%= email %>"
+                      required />
+                  </div>
+                  <div
+                    class="form-group col-md-6">
+                    <label>Phone Number</label>
+                    <input type="text"
+                      class="form-control"
+                      name="phone"
+                      placeholder="Phone Number"
+                      value="<%= phone %>" />
+                  </div>
+                </div>
 
-                                <!-- Username -->
-                                <div class="form-group">
-                                    <label
-                                        for="username">Username</label>
-                                    <input type="text"
-                                        class="form-control"
-                                        name="username"
-                                        id="username"
-                                        placeholder="Username"
-                                        value="<%= username %>"
-                                        required />
-                                </div>
+                <!-- Username -->
+                <div class="form-group">
+                  <label
+                    for="username">Username</label>
+                  <input type="text"
+                    class="form-control"
+                    name="username"
+                    id="username"
+                    placeholder="Username"
+                    value="<%= username %>"
+                    required />
+                </div>
 
-                                <!-- Address -->
-                                <div class="form-group">
-                                    <label>Address</label>
-                                    <textarea name="address"
-                                        class="form-control"
-                                        placeholder="Address"><%= address %></textarea>
-                                </div>
+                <!-- Address -->
+                <div class="form-group">
+                  <label>Address</label>
+                  <textarea name="address"
+                    class="form-control"
+                    placeholder="Address"><%= address %></textarea>
+                </div>
 
-                                <!-- DOB & Gender -->
-                                <div class="form-row">
-                                    <div
-                                        class="form-group col-md-6">
-                                        <label>Date of Birth</label>
-                                        <input type="date"
-                                            value="<%= dob %>"
-                                            class="form-control"
-                                            name="dob"
-                                            placeholder="Date of Birth" />
-                                    </div>
-                                    <div
-                                        class="form-group col-md-6">
-                                        <label>Gender</label><br />
-                                        <div
-                                            class="form-check form-check-inline">
-                                            <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="gender"
-                                                value="Male"
-                                                <%=gender === 'Male'
-                                                ? 'checked' : '' %>
-                                            />
-                                            <label
-                                                class="form-check-label">Male</label>
-                                        </div>
-                                        <div
-                                            class="form-check form-check-inline">
-                                            <input
-                                                class="form-check-input"
-                                                type="radio"
-                                                name="gender"
-                                                value="Female"
-                                                <%=gender ===
-                                                'Female' ? 'checked'
-                                                : '' %> />
-                                            <label
-                                                class="form-check-label">Female</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Hobby -->
-                                <div class="form-group">
-                                    <label>Hobby</label><br />
-                                    <% const hobbiesList = [
-                                    "Singing", "Dancing",
-                                    "Travelling", "Drawing",
-                                    "Gym","Hike",
-                                    "Gaming", "Sports", "Coding",
-                                    "Other"
-                                    ]; %>
-
-                                    <% hobbiesList.forEach(h => { %>
-                                    <div
-                                        class="form-check form-check-inline">
-                                        <input
-                                            class="form-check-input"
-                                            type="checkbox"
-                                            name="hobby"
-                                            value="<%= h %>"
-                                            <%=Array.isArray(hobby)
-                                            && hobby.includes(h) ?
-                                            "checked" : "" %>
-                                        />
-                                        <label
-                                            class="form-check-label"><%=
-                                            h %></label>
-                                    </div>
-                                    <% }); %>
-                                </div>
-
-                                <!-- Submit -->
-                                <div
-                                    class="form-group text-center mt-4">
-                                    <button type="submit"
-                                        class="btn btn-success btn-lg w-100">Save
-                                        Changes</button>
-                                </div>
-                            </form>
-
-                            <div class="text-center mt-2">
-                                <a href="/index"
-                                    class="text-muted">← Back to
-                                    Home</a>
-                            </div>
-                        </div>
+                <!-- DOB & Gender -->
+                <div class="form-row">
+                  <div
+                    class="form-group col-md-6">
+                    <label>Date of Birth</label>
+                    <input type="date"
+                      value="<%= dob %>"
+                      class="form-control"
+                      name="dob"
+                      placeholder="Date of Birth" />
+                  </div>
+                  <div
+                    class="form-group col-md-6">
+                    <label>Gender</label><br />
+                    <div
+                      class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="gender"
+                        value="Male"
+                        <%=gender === 'Male'
+                        ? 'checked' : '' %>
+                      checked />
+                      <label
+                        class="form-check-label">Male</label>
                     </div>
+                    <div
+                      class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="gender"
+                        value="Female"
+                        <%=gender ===
+                        'Female' ? 'checked'
+                        : '' %> />
+                      <label
+                        class="form-check-label">Female</label>
+                    </div>
+                  </div>
+                </div>
 
-                    <!-- </div>
-                    </div> -->
-                </section>
+                <!-- Hobby -->
+                <div class="form-group">
+                  <label>Hobby</label><br />
+                  <% const hobbiesList = [
+                  "Singing", "Dancing",
+                  "Travelling", "Drawing",
+                  "Gym","Hike",
+                  "Gaming", "Sports", "Coding",
+                  "Other"
+                  ]; %>
+
+                  <% hobbiesList.forEach(h => { %>
+                  <div
+                    class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      name="hobby"
+                      value="<%= h %>"
+                      <%=Array.isArray(hobby)
+                      && hobby.includes(h) ?
+                      "checked" : "" %>
+                    />
+                    <label
+                      class="form-check-label"><%=
+                      h %></label>
+                  </div>
+                  <% }); %>
+                </div>
+
+                <!-- Submit -->
+                <div
+                  class="form-group text-center mt-4">
+                  <button type="submit"
+                    class="btn btn-success btn-lg w-100">Save
+                    Changes</button>
+                </div>
+              </form>
+
+              <div class="text-center mt-2">
+                <a href="/index"
+                  class="text-muted">← Back to
+                  Home</a>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <%- include('partials/scripts') %>
+          <!-- </div>
+                    </div> -->
+        </section>
+      </div>
+    </div>
 
-        <!-- JS to preview selected image -->
-        <script>
+    <%- include('partials/scripts') %>
+
+    <!-- JS to preview selected image -->
+    <script>
       document.getElementById("imageUpload").addEventListener("change", function (e) {
         const img = document.getElementById("previewImg");
         if (e.target.files && e.target.files[0]) {
@@ -352,10 +352,10 @@
     }
   });
     </script>
-        <!-- Load jQuery -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Load jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-        <script>
+    <script>
 $(function() {
   console.log("✅ Asterisk script running.");
 
@@ -404,5 +404,5 @@ $(function() {
 });
 </script>
 
-    </body>
+  </body>
 </html>
