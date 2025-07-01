@@ -45,6 +45,8 @@ exports.getalluser = (req, res) => {
         user: userResult,
         success: successMessage,
         currentPage: "manageuser",
+        pageTitle: "User List",
+        breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
       });
     });
   });
@@ -74,6 +76,12 @@ exports.showadduser = (req, res) => {
       error: null,
       success: successMessage || null,
       currentPage: "manageuser",
+      pageTitle: "Add User",
+      breadcrumbs: [
+        { label: "Home", url: "/" },
+        { label: "User List", url: "/manageuser" },
+        { label: "Add User" },
+      ],
     });
   });
 };
@@ -278,6 +286,12 @@ exports.showedituser = (req, res) => {
         currentPage: "manageuser",
         success: successMessage || null,
         error: null,
+        pageTitle: "Edit User",
+        breadcrumbs: [
+          { label: "Home", url: "/" },
+          { label: "User List", url: "/manageuser" },
+          { label: "Edit User" },
+        ],
       });
     });
   });

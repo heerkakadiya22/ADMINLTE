@@ -25,6 +25,8 @@ exports.dashboard = (req, res) => {
       image: imagePath,
       csrfToken: req.csrfToken(),
       currentPage: "index",
+      pageTitle: "Dashboard",
+      breadcrumbs: [{ label: "Home", url: "/" }, { label: "Dashboard" }],
     });
   });
 };

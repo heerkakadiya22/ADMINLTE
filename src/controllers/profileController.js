@@ -52,6 +52,8 @@ exports.showEditProfile = (req, res) => {
       success: req.session.successMsg || null,
       csrfToken: req.csrfToken(),
       currentPage: "editprofile",
+      pageTitle: "User Profile",
+      breadcrumbs: [{ label: "Home", url: "/" }, { label: "User Profile" }],
     });
 
     req.session.successMsg = null;
