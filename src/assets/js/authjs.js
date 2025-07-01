@@ -12,3 +12,34 @@ function togglePassword(inputId, iconId) {
     icon.classList.add("fa-eye");
   }
 }
+
+document.getElementById("imageUpload").addEventListener("change", function (e) {
+  const img = document.getElementById("previewImg");
+  if (e.target.files && e.target.files[0]) {
+    img.src = URL.createObjectURL(e.target.files[0]);
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const successDiv = document.getElementById("successMsg");
+  if (successDiv) {
+    setTimeout(() => {
+      successDiv.style.transition = "opacity 0.5s ease";
+      successDiv.style.opacity = "0";
+      setTimeout(() => {
+        successDiv.style.display = "none";
+      }, 500);
+    }, 3000);
+  }
+
+  const errorDiv = document.getElementById("errorMsg");
+  if (errorDiv) {
+    setTimeout(() => {
+      errorDiv.style.transition = "opacity 0.5s ease";
+      errorDiv.style.opacity = "0";
+      setTimeout(() => {
+        errorDiv.style.display = "none";
+      }, 500);
+    }, 5000);
+  }
+});

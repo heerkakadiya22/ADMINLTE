@@ -6,52 +6,7 @@
     <title>AdminLTE | Edit user</title>
     <%- include('partials/head') %>
 
-    <style>
-      .edit-profile-card {
-        max-width: 700px;
-        margin: 50px auto;
-      }
-
-       label.error {
-  color: red;
-  font-size: 14px;
-  margin-top: 4px;
-  margin-bottom: 6px;
-  display: block;
-}
-
-      .profile-image-wrapper {
-        position: relative;
-        display: inline-block;
-      }
-
-      .profile-image-wrapper img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 3px solid #007bff;
-      }
-
-      .profile-image-wrapper label {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        background-color: #007bff;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border: 2px solid #fff;
-      }
-
-      .profile-image-wrapper input[type="file"] {
-        display: none;
-      }
-    </style>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
   </head>
 
   <body class="hold-transition sidebar-mini layout-fixed">
@@ -301,28 +256,9 @@
 
     <%- include('partials/scripts') %>
 
-    <!-- JS to preview selected image -->
+    <script src="/src/assets/js/authjs.js"></script>
     <script>
-      document.getElementById("imageUpload").addEventListener("change", function (e) {
-        const img = document.getElementById("previewImg");
-        if (e.target.files && e.target.files[0]) {
-          img.src = URL.createObjectURL(e.target.files[0]);
-        }
-      });
-
-//for error msg fade
-       document.addEventListener("DOMContentLoaded", function() {
-    const errorDiv = document.getElementById("errorMsg");
-    if (errorDiv) {
-      setTimeout(() => {
-        errorDiv.style.transition = "opacity 0.5s ease";
-        errorDiv.style.opacity = "0";
-        setTimeout(() => {
-          errorDiv.style.display = "none";
-        }, 500);
-      }, 5000); 
-    }
-  });
+     
 
    $(function() {
   // Define the fields you want to target

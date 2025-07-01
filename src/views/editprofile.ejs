@@ -6,52 +6,7 @@
     <title>AdminLTE | Edit Profile</title>
     <%- include('partials/head') %>
 
-    <style>
-      .edit-profile-card {
-        max-width: 700px;
-        margin: 50px auto;
-      }
-
-       label.error {
-  color: red;
-  font-size: 14px;
-  margin-top: 4px;
-  margin-bottom: 6px;
-  display: block;
-}
-
-      .profile-image-wrapper {
-        position: relative;
-        display: inline-block;
-      }
-
-      .profile-image-wrapper img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 50%;
-        border: 3px solid #007bff;
-      }
-
-      .profile-image-wrapper label {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        background-color: #007bff;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        border: 2px solid #fff;
-      }
-
-      .profile-image-wrapper input[type="file"] {
-        display: none;
-      }
-    </style>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
   </head>
 
   <body class="hold-transition sidebar-mini layout-fixed">
@@ -63,9 +18,9 @@
       }) %>
 
       <div class="content-wrapper">
-       <%- include('partials/contentHeader', { pageTitle: pageTitle,
+        <%- include('partials/contentHeader', { pageTitle: pageTitle,
         breadcrumbs: breadcrumbs }) %>
-        
+
         <section class="content">
           <!-- <div class="container-fluid">
                         <div class="row"> -->
@@ -306,39 +261,8 @@
 
     <%- include('partials/scripts') %>
 
-    <!-- JS to preview selected image -->
-    <script>
-      document.getElementById("imageUpload").addEventListener("change", function (e) {
-        const img = document.getElementById("previewImg");
-        if (e.target.files && e.target.files[0]) {
-          img.src = URL.createObjectURL(e.target.files[0]);
-        }
-      });
+    <script src="/src/assets/js/authjs.js"></script>
 
-  document.addEventListener("DOMContentLoaded", function() {
-    const successDiv = document.getElementById("successMsg");
-    if (successDiv) {
-      setTimeout(() => {
-        successDiv.style.transition = "opacity 0.5s ease";
-        successDiv.style.opacity = "0";
-        setTimeout(() => {
-          successDiv.style.display = "none";
-        }, 500);
-      }, 3000);
-    }
-
-     const errorDiv = document.getElementById("errorMsg");
-    if (errorDiv) {
-      setTimeout(() => {
-        errorDiv.style.transition = "opacity 0.5s ease";
-        errorDiv.style.opacity = "0";
-        setTimeout(() => {
-          errorDiv.style.display = "none";
-        }, 500);
-      }, 5000); 
-    }
-  });
-    </script>
     <!-- Load jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -398,109 +322,120 @@ $(function() {
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
     <script>
-  // Custom pattern rule
-  $.validator.addMethod("pattern", function (value, element, param) {
+        // edit proflie
+$.validator.addMethod(
+  "pattern",
+  function (value, element, param) {
     if (this.optional(element)) return true;
     if (typeof param === "string") {
       param = new RegExp(param);
     }
     return param.test(value);
-  }, "Invalid format.");
+  },
+  "Invalid format."
+);
 
-  $.validator.addMethod("genderValid", function(value, element) {
-  if (value === "") {
-    return true; // allow empty
-  }
-  return value === "Male" || value === "Female";
-}, "Gender must be Male or Female");
-
-$.validator.addMethod("isoDate", function(value, element) {
-  if (value === "") {
-    return true; // allow empty
-  }
-  // Simple regex for YYYY-MM-DD format
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
-}, "Please enter a valid date (YYYY-MM-DD)");
-
-
-  $(function () {
-    $("#editProfileForm").validate({
-      rules: {
-        name: {
-          required: true,
-          pattern: "^[A-Za-z ]+$",
-        },
-        email: {
-          required: true,
-          email: true,
-        },
-        phone: {
-          digits: true,
-          minlength:10,
-          maxlength: 10,
-        },
-        address: {
-          maxlength: 200,
-        },
-        username: {
-          minlength: 4,
-        },
-          gender: {
-      genderValid: true
-    },
-    hobby: {
-    },
-    dob: {
-      isoDate: true
-    },
-      },
-      messages: {
-        name: {
-          required: "Name is required.",
-          pattern: "Name must contain only letters.",
-        },
-        email: {
-          required: "Email is required.",
-          email: "Enter a valid email address.",
-        },
-        phone: {
-          digits: "Only digits allowed.",
-            maxlength: "Phone cannot exceed 10 digits.",
-          minlength: "phone cannot less 10 digits.",
-        },
-        address: {
-          maxlength: "Address must be less than 200 characters.",
-        },
-        username: {
-          minlength: "Username must be at least 4 characters",
-        },
-        gender: {
-      genderValid: "Gender must be Male or Female"
-    },
-      dob: {
-      isoDate: "Please enter a valid date in YYYY-MM-DD format"
+$.validator.addMethod(
+  "genderValid",
+  function (value, element) {
+    if (value === "") {
+      return true; // allow empty
     }
+    return value === "Male" || value === "Female";
+  },
+  "Gender must be Male or Female"
+);
+
+$.validator.addMethod(
+  "isoDate",
+  function (value, element) {
+    if (value === "") {
+      return true; // allow empty
+    }
+    // Simple regex for YYYY-MM-DD format
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+  },
+  "Please enter a valid date (YYYY-MM-DD)"
+);
+
+$(function () {
+  $("#editProfileForm").validate({
+    rules: {
+      name: {
+        required: true,
+        pattern: "^[A-Za-z ]+$",
       },
-      errorElement: "label",
-      errorClass: "error",
-      highlight: function (element) {
-        $(element).addClass("is-invalid");
+      email: {
+        required: true,
+        email: true,
       },
-      unhighlight: function (element) {
-        $(element).removeClass("is-invalid");
+      phone: {
+        digits: true,
+        minlength: 10,
+        maxlength: 10,
       },
-      errorPlacement: function (error, element) {
-  if (element.attr("name") === "gender") {
-    // Append error after the last radio button inside the same form-group
-    element.closest('.form-group').find('.form-check').last().after(error);
-  } else if (element.closest(".input-group").length > 0) {
-    error.insertAfter(element.closest(".input-group"));
-  } else {
-    error.insertAfter(element);
-  }
-}
-    });
+      address: {
+        maxlength: 200,
+      },
+      username: {
+        minlength: 4,
+      },
+      gender: {
+        genderValid: true,
+      },
+      hobby: {},
+      dob: {
+        isoDate: true,
+      },
+    },
+    messages: {
+      name: {
+        required: "Name is required.",
+        pattern: "Name must contain only letters.",
+      },
+      email: {
+        required: "Email is required.",
+        email: "Enter a valid email address.",
+      },
+      phone: {
+        digits: "Only digits allowed.",
+        maxlength: "Phone cannot exceed 10 digits.",
+        minlength: "phone cannot less 10 digits.",
+      },
+      address: {
+        maxlength: "Address must be less than 200 characters.",
+      },
+      username: {
+        minlength: "Username must be at least 4 characters",
+      },
+      gender: {
+        genderValid: "Gender must be Male or Female",
+      },
+      dob: {
+        isoDate: "Please enter a valid date in YYYY-MM-DD format",
+      },
+    },
+    errorElement: "label",
+    errorClass: "error",
+    highlight: function (element) {
+      $(element).addClass("is-invalid");
+    },
+    unhighlight: function (element) {
+      $(element).removeClass("is-invalid");
+    },
+    errorPlacement: function (error, element) {
+      if (element.attr("name") === "gender") {
+        // Append error after the last radio button inside the same form-group
+        element.closest(".form-group").find(".form-check").last().after(error);
+      } else if (element.closest(".input-group").length > 0) {
+        error.insertAfter(element.closest(".input-group"));
+      } else {
+        error.insertAfter(element);
+      }
+    },
   });
-  </script>
+});
+      </script>
+
   </body>
 </html>
