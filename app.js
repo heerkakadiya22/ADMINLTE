@@ -8,6 +8,7 @@ const authRoutes = require("./src/routes/authRoute");
 const dashboardRoutes = require("./src/routes/dashboardRoute");
 const passwordRoutes = require("./src/routes/passwordRoute");
 const profileRoutes = require("./src/routes/profileRoute");
+const roleRoutes = require("./src/routes/rolesRoutes");
 
 const { preventback } = require("./src/middleware/authMiddleware");
 
@@ -44,6 +45,7 @@ app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(passwordRoutes);
 app.use(profileRoutes);
+app.use(roleRoutes);
 
 // Start
 app.listen(PORT, () => {
