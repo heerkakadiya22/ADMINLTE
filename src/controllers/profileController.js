@@ -1,116 +1,145 @@
 const path = require("path");
 const db = require("../config/db");
+const fs = require("fs");
 
-// GET: Show edit profile
+// ✅ GET: Show edit profile
 exports.showEditProfile = (req, res) => {
   const id = req.session.adminId;
-  const sql = "SELECT * FROM admin WHERE id = ?";
+
+  const sql = `
+    SELECT admin.*, roles.name AS roleName
+    FROM admin
+    LEFT JOIN roles ON admin.roleId = roles.id
+    WHERE admin.id = ?
+  `;
+  const getRolesSql = "SELECT * FROM roles";
+
   db.query(sql, [id], (err, result) => {
     if (err || result.length === 0) {
-      return res.render("editProfile", {
-        name: "",
-        email: "",
-        username: "",
-        address: "",
-        dob: "",
-        gender: "",
-        phone: "",
-        hobby: [],
-        image: "/src/assets/image/uploads/profile-user.png",
+      return renderProfile({
+        res,
+        user: {},
+        roles: [],
         error: "DB error or user not found",
-        success: null,
-        csrfToken: req.csrfToken(),
       });
     }
 
     const user = result[0];
-    let dobFormatted = "";
-    if (user.dob) {
-      const parsedDate = new Date(user.dob);
-      if (!isNaN(parsedDate)) {
-        dobFormatted = new Date(
-          parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000
-        )
-          .toISOString()
-          .split("T")[0];
-      }
-    }
+
+    const dobFormatted = user.dob
+      ? (() => {
+          const parsedDate = new Date(user.dob);
+          if (!isNaN(parsedDate)) {
+            return new Date(
+              parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000
+            )
+              .toISOString()
+              .split("T")[0];
+          }
+          return "";
+        })()
+      : "";
 
     const hobbyArray = user.hobby ? user.hobby.split(",") : [];
-    console.log("Session successMsg at render:", req.session.successMsg);
-    res.render("editProfile", {
-      name: user.name,
-      email: user.email,
-      username: user.username,
-      address: user.address,
-      dob: dobFormatted,
-      gender: user.gender,
-      phone: user.phone_no,
-      hobby: hobbyArray,
-      image: "/src/assets/image/uploads/" + (user.image || "profile-user.png"),
-      error: null,
-      success: req.session.successMsg || null,
-      csrfToken: req.csrfToken(),
-      currentPage: "editprofile",
-      pageTitle: "User Profile",
-      breadcrumbs: [{ label: "Home", url: "/" }, { label: "User Profile" }],
-    });
 
-    req.session.successMsg = null;
+    db.query(getRolesSql, (roleErr, roleResults) => {
+      if (roleErr) {
+        return renderProfile({
+          res,
+          user,
+          roles: [],
+          dobFormatted,
+          hobbyArray,
+          error: "Error loading roles.",
+        });
+      }
+
+      // ✅ Keep success message before clearing
+      const successMessage = req.session.successMsg;
+      req.session.successMsg = null;
+
+      renderProfile({
+        res,
+        user,
+        roles: roleResults,
+        dobFormatted,
+        hobbyArray,
+        success: successMessage,
+      });
+    });
   });
 };
 
-// POST: Update profile
+// ✅ Helper to render profile
+function renderProfile({
+  res,
+  user = {},
+  roles = [],
+  dobFormatted = "",
+  hobbyArray = [],
+  error = null,
+  success = null,
+}) {
+  res.render("editProfile", {
+    name: user.name || "",
+    email: user.email || "",
+    username: user.username || "",
+    address: user.address || "",
+    dob: dobFormatted,
+    gender: user.gender || "",
+    phone: user.phone_no || "",
+    hobby: hobbyArray,
+    roleId: user.roleId || 0,
+    roleName: user.roleName || "",
+    roles,
+    image: "/src/assets/image/uploads/" + (user.image || "profile-user.png"),
+    error,
+    success,
+    csrfToken: res.locals._csrf || "",
+    currentPage: "editprofile",
+    pageTitle: "User Profile",
+    breadcrumbs: [{ label: "Home", url: "/" }, { label: "User Profile" }],
+  });
+}
+
+// ✅ POST: Update profile
 exports.updateProfile = (req, res) => {
-  const { name, email, username, address, dob, gender, phone } = req.body;
+  const { name, email, username, address, dob, gender, phone, roleId } =
+    req.body;
   let { hobby } = req.body;
   const id = req.session.adminId;
   const newImage = req.file ? req.file.filename : null;
 
-  const getImageSql = "SELECT image FROM admin WHERE id = ?";
+  const getUserSql = `
+    SELECT admin.*, roles.name AS roleName
+    FROM admin
+    LEFT JOIN roles ON admin.roleId = roles.id
+    WHERE admin.id = ?
+  `;
+  const getRolesSql = "SELECT * FROM roles";
 
-  db.query(getImageSql, [id], (err, result) => {
+  db.query(getUserSql, [id], (err, result) => {
     if (err || result.length === 0) {
-      return res.render("editProfile", {
-        name,
-        email,
-        username,
-        address,
-        dob,
-        gender,
-        phone,
-        hobby: Array.isArray(hobby) ? hobby : hobby ? [hobby] : [],
-        image: "/src/assets/image/uploads/profile-user.png",
-        error: "Failed to fetch existing image.",
-        success: null,
-        csrfToken: req.csrfToken(),
-        currentPage: "editprofile",
-      });
+      return renderWithError("Failed to fetch existing user.", []);
     }
 
-    const currentImage = result[0].image || "profile-user.png";
+    const user = result[0];
+    const currentImage = user.image || "profile-user.png";
     const imageToUse = newImage || currentImage;
 
-    // ✅ Delete the old image if new one uploaded and it's not default
+    // ✅ Delete old image if needed
     if (newImage && currentImage !== "profile-user.png") {
-      const fs = require("fs");
-      const path = require("path");
       const oldImagePath = path.join(
         __dirname,
         "../assets/image/uploads",
         currentImage
       );
-
       if (fs.existsSync(oldImagePath)) {
         fs.unlink(oldImagePath, (unlinkErr) => {
           if (unlinkErr) {
             console.error("Error deleting old image:", unlinkErr);
-          } else {
-            console.log("Old image deleted successfully:", oldImagePath);
           }
         });
-      } else {
-        console.log("Old image file not found to delete:", oldImagePath);
       }
     }
 
@@ -122,14 +151,14 @@ exports.updateProfile = (req, res) => {
     }
     const hobbyString = hobby.join(",");
 
-    // ✅ Check for duplicate username or phone
+    // ✅ Check for duplicate username/email
     const checkSql = `
-      SELECT * FROM admin 
+      SELECT * FROM admin
       WHERE (username = ? OR email = ?) AND id != ?
     `;
     db.query(checkSql, [username, email, id], (err, checkResults) => {
       if (err) {
-        return renderWithError("Database error while checking unique fields.");
+        return renderWithError("Database error while checking uniqueness.", []);
       }
 
       if (checkResults.length) {
@@ -137,22 +166,23 @@ exports.updateProfile = (req, res) => {
         const conflictMessage =
           existing.username === username
             ? "Username already exists."
-            : "email already exists.";
-        return renderWithError(conflictMessage);
+            : "Email already exists.";
+        return renderWithError(conflictMessage, []);
       }
 
       // ✅ Update profile
       const updateSql = `
-        UPDATE admin SET 
-          name = ?, 
-          email = ?, 
-          username = ?, 
-          image = ?, 
-          address = ?, 
-          dob = ?, 
-          gender = ?, 
-          phone_no = ?, 
-          hobby = ?
+        UPDATE admin SET
+          name = ?,
+          email = ?,
+          username = ?,
+          image = ?,
+          address = ?,
+          dob = ?,
+          gender = ?,
+          phone_no = ?,
+          hobby = ?,
+          roleId = ?
         WHERE id = ?
       `;
       const values = [
@@ -165,31 +195,44 @@ exports.updateProfile = (req, res) => {
         gender,
         phone,
         hobbyString,
+        roleId || null,
         id,
       ];
 
       db.query(updateSql, values, (err) => {
         if (err) {
-          return renderWithError("Database update failed.");
+          return renderWithError("Database update failed.", []);
         }
 
-        // ✅ Update session data
         req.session.name = name;
         req.session.email = email;
         req.session.image = imageToUse;
         req.session.successMsg = "Profile updated successfully.";
 
         req.session.save((err) => {
-          if (err) {
-            console.error("Session save error:", err);
-          }
+          if (err) console.error("Session save error:", err);
           res.redirect("/editprofile");
         });
       });
     });
 
-    // ✅ Helper to render with error
-    function renderWithError(errorMessage) {
+    // ✅ Helper to render form with error + roles
+    function renderWithError(errorMessage, roleResults) {
+      if (!roleResults || roleResults.length === 0) {
+        db.query(getRolesSql, (roleErr, roles) => {
+          if (roleErr) {
+            console.error("Error fetching roles:", roleErr);
+            return res.status(500).send("Error fetching roles.");
+          }
+          renderPage(errorMessage, roles);
+        });
+      } else {
+        renderPage(errorMessage, roleResults);
+      }
+    }
+
+    // Helper to actually render
+    function renderPage(errorMessage, roles) {
       res.render("editProfile", {
         name,
         email,
@@ -198,12 +241,17 @@ exports.updateProfile = (req, res) => {
         dob,
         gender,
         phone,
-        hobby,
+        hobby: Array.isArray(hobby) ? hobby : hobby ? [hobby] : [],
+        roleId: roleId || user.roleId || 0,
+        roleName: user.roleName || "",
+        roles,
         image: "/src/assets/image/uploads/" + imageToUse,
         error: errorMessage,
         success: null,
         csrfToken: req.csrfToken(),
         currentPage: "editprofile",
+        pageTitle: "User Profile",
+        breadcrumbs: [{ label: "Home", url: "/" }, { label: "User Profile" }],
       });
     }
   });

@@ -23,6 +23,7 @@ exports.dashboard = (req, res) => {
       name: user.name,
       email: user.email,
       image: imagePath,
+      roleId: user.roleId,
       csrfToken: req.csrfToken(),
       currentPage: "index",
       pageTitle: "Dashboard",

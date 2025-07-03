@@ -11,6 +11,7 @@ exports.getAllRoles = (req, res) => {
         csrfToken: "",
         name: "",
         image: "/src/assets/image/uploads/profile-user.png",
+        roleId: 0, // ✅ added
         roles: [],
         success: null,
         currentPage: "rolelist",
@@ -33,6 +34,7 @@ exports.getAllRoles = (req, res) => {
           csrfToken: "",
           name: admin.name,
           image: imagePath,
+          roleId: admin.roleId, // ✅ added
           roles,
           success: successMessage,
           currentPage: "rolelist",
@@ -46,6 +48,7 @@ exports.getAllRoles = (req, res) => {
           csrfToken: "",
           name: admin.name,
           image: imagePath,
+          roleId: admin.roleId, // ✅ added
           roles: [],
           success: successMessage,
           currentPage: "rolelist",
@@ -83,7 +86,8 @@ exports.showCreateRoleForm = async (req, res) => {
       error: null,
       name: admin.name,
       image: imagePath,
-      currentPage: "roles",
+      roleId: admin.roleId, // ✅ added
+      currentPage: "rolelist",
       success: successMessage,
       csrfToken: "",
       pageTitle: "Add Role",
@@ -106,7 +110,7 @@ exports.createRole = async (req, res) => {
   const isActive = active === "on" ? true : false;
 
   async function renderWithError(errorMessage) {
-    let admin = { name: "", image: "" };
+    let admin = { name: "", image: "", roleId: 0 };
     try {
       const [results] = await sequelize.query(
         "SELECT * FROM admin WHERE id = ?",
@@ -128,7 +132,8 @@ exports.createRole = async (req, res) => {
       error: errorMessage,
       name: admin.name,
       image: imagePath,
-      currentPage: "roles",
+      roleId: admin.roleId || 0, // ✅ added
+      currentPage: "rolelist",
       csrfToken: "",
       pageTitle: "Add Role",
       breadcrumbs: [
@@ -171,7 +176,7 @@ exports.createRole = async (req, res) => {
 // Show Edit Role Form
 exports.showEditRoleForm = async (req, res) => {
   const adminId = req.session.adminId;
-  const roleId = req.params.id;
+  const roleIdParam = req.params.id;
 
   try {
     const [results] = await sequelize.query(
@@ -188,7 +193,7 @@ exports.showEditRoleForm = async (req, res) => {
       ? "/src/assets/image/uploads/" + admin.image
       : "/src/assets/image/uploads/profile-user.png";
 
-    const role = await Role.findByPk(roleId);
+    const role = await Role.findByPk(roleIdParam);
 
     if (!role) {
       req.session.success = "Role not found.";
@@ -200,7 +205,8 @@ exports.showEditRoleForm = async (req, res) => {
       error: null,
       name: admin.name,
       image: imagePath,
-      currentPage: "roles",
+      roleId: admin.roleId, // ✅ added
+      currentPage: "rolelist",
       success: null,
       csrfToken: "",
       pageTitle: "Edit Role",

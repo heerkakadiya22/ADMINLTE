@@ -12,7 +12,7 @@
 
     <body class="hold-transition sidebar-mini">
         <div class="wrapper">
-            <%- include('partials/sidebar', { name: name, image: image,
+            <%- include('partials/sidebar', { name: name, image: image, roleId: roleId,
             csrfToken: csrfToken }) %>
 
             <!-- Content Wrapper. Contains page content -->
@@ -62,6 +62,7 @@
                                         <th>Username</th>
                                         <th>DOB / Gender</th>
                                         <th>Hobby</th>
+                                        <th>Role</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -98,6 +99,7 @@
                                             <%= user.gender || 'N/A' %>
                                         </td>
                                         <td><%= user.hobby || 'N/A' %></td>
+                                        <td><%= user.role_name || 'N/A' %></td>
                                         <td>
                                             <a class="btn btn-info btn-sm"
                                                 href="/edituser/<%= user.id %>">

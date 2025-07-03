@@ -13,7 +13,7 @@
       <%- include('partials/sidebar', {
       name: name,
       csrfToken: typeof csrfToken !== 'undefined' ? csrfToken : null,
-      currentPage: currentPage
+      currentPage: currentPage, roleId: roleId,
       }) %>
 
       <div class="content-wrapper">

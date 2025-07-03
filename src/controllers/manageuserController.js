@@ -2,18 +2,24 @@ const db = require("../config/db");
 const path = require("path");
 const fs = require("fs");
 
+// ✅ GET ALL USERS
 exports.getalluser = (req, res) => {
   const id = req.session.adminId;
 
-  // Select only the current logged-in admin
   const sql = "SELECT * FROM admin WHERE id = ?";
   db.query(sql, [id], (err, result) => {
     if (err || result.length === 0) {
       return res.render("manageuser", {
         csrfToken: req.csrfToken(),
         name: "",
+        email: "",
+        roleId: 0, // default
         image: "/src/assets/image/uploads/profile-user.png",
         user: [],
+        currentPage: "manageuser",
+        pageTitle: "User List",
+        breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
+        success: null,
       });
     }
 
@@ -24,35 +30,42 @@ exports.getalluser = (req, res) => {
     const successMessage = req.session.success;
     req.session.success = null;
 
-    // Now fetch all users for display in table
-    const userSql = "SELECT * FROM admin";
+    const userSql =
+      "SELECT a.*, r.name AS role_name FROM admin a LEFT JOIN roles r ON a.roleId = r.id";
+
     db.query(userSql, (userErr, userResult) => {
       if (userErr) {
+        console.error(userErr);
         return res.render("manageuser", {
           csrfToken: req.csrfToken(),
           name: admin.name,
+          email: admin.email,
+          roleId: admin.roleId, // ✅ added here
           image: imagePath,
           user: [],
-          success: req.session.success,
           currentPage: "manageuser",
+          pageTitle: "User List",
+          breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
+          success: null,
         });
       }
 
       return res.render("manageuser", {
         csrfToken: req.csrfToken(),
         name: admin.name,
+        email: admin.email,
+        roleId: admin.roleId, // ✅ added here
         image: imagePath,
         user: userResult,
-        success: successMessage,
         currentPage: "manageuser",
         pageTitle: "User List",
         breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
+        success: successMessage,
       });
     });
   });
 };
 
-//adduser controller
 exports.showadduser = (req, res) => {
   const id = req.session.adminId;
 
@@ -61,25 +74,27 @@ exports.showadduser = (req, res) => {
     if (err || result.length === 0) {
       return res.redirect("/login");
     }
+
     const user = result[0];
     const imagePath = user.image
       ? "/src/assets/image/uploads/" + user.image
       : "/src/assets/image/uploads/profile-user.png";
 
-    const successMessage = req.session.success;
+    const successMessage = req.session.success || null;
     delete req.session.success;
 
-    return res.render("adduser", {
+    res.render("adduser", {
+      name: user.name || "",
+      roleId: user.roleId || 0,
       csrfToken: req.csrfToken(),
-      name: user.name,
-      image: imagePath,
-      error: null,
-      success: successMessage || null,
       currentPage: "manageuser",
+      error: null,
+      success: successMessage,
+      image: imagePath,
       pageTitle: "Add User",
       breadcrumbs: [
         { label: "Home", url: "/" },
-        { label: "User List", url: "/manageuser" },
+        { label: "Manage Users", url: "/manageuser" },
         { label: "Add User" },
       ],
     });
@@ -108,7 +123,7 @@ exports.insertuser = (req, res) => {
   const image = req.file ? req.file.filename : "profile-user.png";
   const hobbyFormatted = Array.isArray(hobby) ? hobby.join(",") : hobby;
 
-  // Check if username, email, or phone already exists
+  // Check if username or email already exists
   const checkSql = `
     SELECT * FROM admin 
     WHERE username = ? OR email = ?
@@ -122,13 +137,11 @@ exports.insertuser = (req, res) => {
     if (existingUsers.length) {
       const existing = existingUsers[0];
       let conflictMessage = "A user with the same credentials already exists.";
-
       if (existing.username === username) {
         conflictMessage = "Username already exists.";
       } else if (existing.email === email) {
         conflictMessage = "Email already exists.";
       }
-
       return renderWithError(conflictMessage);
     }
 
@@ -161,15 +174,25 @@ exports.insertuser = (req, res) => {
     });
   });
 
-  // Helper function to render the form with error
+  // Helper function to render with error
   function renderWithError(errorMessage) {
+    const imagePath = req.session.image
+      ? "/src/assets/image/uploads/" + req.session.image
+      : "/src/assets/image/uploads/profile-user.png";
+
     res.render("adduser", {
+      name: req.session.name || "",
+      csrfToken: req.csrfToken(),
+      currentPage: "manageuser",
       error: errorMessage,
       success: null,
-      name: req.session.adminName,
-      image:
-        req.session.adminImage || "/src/assets/image/uploads/profile-user.png",
-      csrfToken: "",
+      image: imagePath,
+      pageTitle: "Add User",
+      breadcrumbs: [
+        { label: "Home", url: "/" },
+        { label: "Manage Users", url: "/manageuser" },
+        { label: "Add User" },
+      ],
     });
   }
 };
@@ -228,6 +251,7 @@ exports.showedituser = (req, res) => {
 
   const getSelectedUserSql = "SELECT * FROM admin WHERE id = ?";
   const getCurrentAdminSql = "SELECT * FROM admin WHERE id = ?";
+  const getRolesSql = "SELECT * FROM roles";
 
   db.query(getSelectedUserSql, [selectedUserId], (err, selectedResult) => {
     if (err || selectedResult.length === 0) {
@@ -241,57 +265,65 @@ exports.showedituser = (req, res) => {
       }
       const currentUser = currentResult[0];
 
-      const selectedImagePath = selectedUser.image
-        ? "/src/assets/image/uploads/" + selectedUser.image
-        : "/src/assets/image/uploads/profile-user.png";
+      db.query(getRolesSql, (err3, roleResults) => {
+        if (err3) {
+          return res.redirect("/manageuser");
+        }
 
-      const currentImagePath = currentUser.image
-        ? "/src/assets/image/uploads/" + currentUser.image
-        : "/src/assets/image/uploads/profile-user.png";
+        const selectedImagePath = selectedUser.image
+          ? "/src/assets/image/uploads/" + selectedUser.image
+          : "/src/assets/image/uploads/profile-user.png";
 
-      const dobformat =
-        selectedUser.dob && !isNaN(new Date(selectedUser.dob))
-          ? (() => {
-              const dateObj = new Date(selectedUser.dob);
-              const yyyy = dateObj.getFullYear();
-              const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
-              const dd = String(dateObj.getDate()).padStart(2, "0");
-              return `${yyyy}-${mm}-${dd}`;
-            })()
-          : "";
+        const currentImagePath = currentUser.image
+          ? "/src/assets/image/uploads/" + currentUser.image
+          : "/src/assets/image/uploads/profile-user.png";
 
-      const successMessage = req.session.success;
-      delete req.session.success;
+        const dobformat =
+          selectedUser.dob && !isNaN(new Date(selectedUser.dob))
+            ? (() => {
+                const dateObj = new Date(selectedUser.dob);
+                const yyyy = dateObj.getFullYear();
+                const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+                const dd = String(dateObj.getDate()).padStart(2, "0");
+                return `${yyyy}-${mm}-${dd}`;
+              })()
+            : "";
 
-      return res.render("edituser", {
-        csrfToken: req.csrfToken(),
+        const successMessage = req.session.success;
+        delete req.session.success;
 
-        // logged-in admin info (for header/sidebar)
-        name: currentUser.name,
-        image: currentImagePath,
+        return res.render("edituser", {
+          csrfToken: req.csrfToken(),
 
-        // user being edited
-        editId: selectedUser.id,
-        editName: selectedUser.name,
-        editEmail: selectedUser.email,
-        editPhone: selectedUser.phone_no,
-        editUsername: selectedUser.username,
-        editAddress: selectedUser.address,
-        editDob: dobformat,
+          // Logged-in admin info (for header/sidebar)
+          name: currentUser.name,
+          image: currentImagePath,
+          roleId: currentUser.roleId,
 
-        editGender: selectedUser.gender,
-        editHobby: selectedUser.hobby ? selectedUser.hobby.split(",") : [],
-        editImage: selectedImagePath,
+          // User being edited
+          editId: selectedUser.id,
+          editName: selectedUser.name,
+          editEmail: selectedUser.email,
+          editPhone: selectedUser.phone_no,
+          editUsername: selectedUser.username,
+          editAddress: selectedUser.address,
+          editDob: dobformat,
+          editGender: selectedUser.gender,
+          editHobby: selectedUser.hobby ? selectedUser.hobby.split(",") : [],
+          editImage: selectedImagePath,
+          editRoleId: selectedUser.roleId,
 
-        currentPage: "manageuser",
-        success: successMessage || null,
-        error: null,
-        pageTitle: "Edit User",
-        breadcrumbs: [
-          { label: "Home", url: "/" },
-          { label: "User List", url: "/manageuser" },
-          { label: "Edit User" },
-        ],
+          roles: roleResults,
+          currentPage: "manageuser",
+          success: successMessage || null,
+          error: null,
+          pageTitle: "Edit User",
+          breadcrumbs: [
+            { label: "Home", url: "/" },
+            { label: "User List", url: "/manageuser" },
+            { label: "Edit User" },
+          ],
+        });
       });
     });
   });
@@ -300,8 +332,18 @@ exports.showedituser = (req, res) => {
 // POST: Update selected user
 // POST: Update User
 exports.updateUser = (req, res) => {
-  const { id, name, email, username, address, dob, gender, phone, hobby } =
-    req.body;
+  const {
+    id,
+    name,
+    email,
+    username,
+    address,
+    dob,
+    gender,
+    phone,
+    hobby,
+    roleId,
+  } = req.body;
 
   if (!id || isNaN(Number(id))) {
     return res.status(400).send("Invalid request: Missing or invalid user ID.");
@@ -376,7 +418,7 @@ exports.updateUser = (req, res) => {
       const updateSql = `
         UPDATE admin SET 
           name = ?, email = ?, username = ?, image = ?,
-          address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?
+          address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?,  roleId = ?
         WHERE id = ?
       `;
       const values = [
@@ -389,6 +431,7 @@ exports.updateUser = (req, res) => {
         gender,
         phone,
         hobbyString,
+        roleId || null,
         id,
       ];
 
@@ -403,24 +446,32 @@ exports.updateUser = (req, res) => {
     });
 
     function renderWithError(errorMessage) {
-      res.render("edituser", {
-        name: req.session.name,
-        image: req.session.image,
+      const getRolesSql = "SELECT * FROM role";
+      db.query(getRolesSql, (roleErr, roleResults) => {
+        if (roleErr) {
+          return res.status(500).send("Error fetching roles.");
+        }
 
-        editId: id,
-        editName: name,
-        editEmail: email,
-        editUsername: username,
-        editAddress: address,
-        editDob: formattedDob,
-        editGender: gender,
-        editPhone: phone,
-        editHobby: hobbyArray,
-        editImage: "/src/assets/image/uploads/" + imageToUse,
+        res.render("edituser", {
+          name: req.session.name,
+          image: req.session.image,
 
-        currentPage: "manageuser",
-        error: errorMessage,
-        success: null,
+          editId: id,
+          editName: name,
+          editEmail: email,
+          editUsername: username,
+          editAddress: address,
+          editDob: formattedDob,
+          editGender: gender,
+          editPhone: phone,
+          editHobby: hobbyArray,
+          editImage: "/src/assets/image/uploads/" + imageToUse,
+          editRoleId: roleId || null,
+          roles: roleResults,
+          currentPage: "manageuser",
+          error: errorMessage,
+          success: null,
+        });
       });
     }
   });
