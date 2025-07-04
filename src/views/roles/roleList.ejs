@@ -59,17 +59,12 @@
                                                         class="fas fa-pencil-alt"></i>
                                                     Edit
                                                 </a>
-                                                <form
-                                                    action="/roles/<%= role.id %>/delete"
-                                                    method="POST"
-                                                    class="form-delete d-inline">
-                                                    <button type="submit"
-                                                        class="btn btn-danger btn-sm">
-                                                        <i
-                                                            class="fas fa-trash"></i>
-                                                        Delete
-                                                    </button>
-                                                </form>
+                                                <button
+                                                    class="btn btn-danger btn-sm btn-delete-role"
+                                                    data-id="<%= role.id %>">
+                                                    <i class="fas fa-trash"></i>
+                                                    Delete
+                                                </button>
                                             </td>
                                         </tr>
                                         <% }) %>
@@ -92,23 +87,49 @@
 
         <%- include('partials/scripts') %>
         <script>
-    // SweetAlert Delete Confirmation
-    document.querySelectorAll('.form-delete').forEach(form => {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        swal({
-          title: "Are you sure?",
-          text: "This role will be permanently deleted.",
-          icon: "warning",
-          buttons: ["Cancel", "Yes, delete it!"],
-          dangerMode: true,
-        }).then((willDelete) => {
-          if (willDelete) {
-            this.submit();
-          }
-        });
+ document.addEventListener('DOMContentLoaded', function() {
+  const deleteButtons = document.querySelectorAll('.btn-delete-role');
+
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const roleId = this.getAttribute('data-id');
+
+      swal({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        buttons: ["Cancel", "Yes, delete it!"],
+        dangerMode: true,
+      })
+      .then((willDelete) => {
+        if (willDelete) {
+          fetch(`/roles/${roleId}/delete`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Requested-With": "XMLHttpRequest"
+            }
+          })
+          .then(response => {
+            if (response.redirected) {
+              swal("Deleted!", "The role has been deleted.", "success")
+              .then(() => {
+                window.location.href = response.url;
+              });
+            } else {
+              return response.text();
+            }
+          })
+          .catch(err => {
+            console.error("Error deleting role:", err);
+            swal("Error", "Failed to delete role.", "error");
+          });
+        }
       });
     });
+  });
+});
+
 
     // DataTable
     $('#usersTable').DataTable({

@@ -87,18 +87,37 @@
                         <input type="text"
                           class="form-control"
                           name="phone"
+                          id="phone"
                           placeholder="Phone Number" />
                       </div>
                     </div>
 
-                    <!-- Username -->
-                    <div class="form-group">
-                      <label for="username">Username</label>
-                      <input type="text"
-                        class="form-control"
-                        name="username"
-                        id="username"
-                        placeholder="Username" />
+                    <div class="form-row">
+                      <!-- Username -->
+                      <div class="form-group col-md-6">
+                        <label for="username">Username</label>
+                        <input type="text"
+                          class="form-control"
+                          name="username"
+                          id="username"
+                          placeholder="Username"
+                          required />
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label for="roleId">Select Role</label>
+                        <select id="roleId" name="roleId" class="form-control"
+                          required>
+                          <option value <%=!roleId ? "selected" : "" %>>Select
+                            Role</option>
+                          <% roles.forEach(function(role) { %>
+                          <option value="<%= role.id %>">
+                            <%= role.name %>
+                          </option>
+                          <% }); %>
+                        </select>
+
+                      </div>
+
                     </div>
 
                     <!-- Address -->
@@ -283,7 +302,7 @@ $.validator.addMethod("isoDate", function(value, element) {
         },
         phone: {
           digits: true,
-          minlength: 10,
+          // minlength: 10,
           maxlength: 10,
         },
         address: {
@@ -322,8 +341,8 @@ $.validator.addMethod("isoDate", function(value, element) {
         },
         phone: {
           digits: "Only digits allowed.",
+          // minlength: "phone cannot less 10 digits.",
           maxlength: "Phone cannot exceed 10 digits.",
-          minlength: "phone cannot less 10 digits.",
         },
         address: {
           maxlength: "Address must be less than 200 characters.",

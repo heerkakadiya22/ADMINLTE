@@ -107,13 +107,10 @@
                                                     class="fas fa-pencil-alt"></i>
                                                 Edit
                                             </a>
-                                            <button
-                                                class="btn btn-danger btn-sm btn-delete"
-                                                data-id="<%= user.id %>">
-                                                <i class="fas fa-trash"></i>
-                                                Delete
+                                            <button class="btn btn-danger btn-sm btn-delete" data-id="<%= user.id %>">
+                                              <i class="fas fa-trash"></i>
+                                              Delete
                                             </button>
-
                                         </td>
                                     </tr>
                                     <% }); %>
@@ -134,30 +131,50 @@
         </div>
 
         <%- include('partials/scripts') %>
+        
         <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const deleteButtons = document.querySelectorAll('.btn-delete');
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btn-delete')) {
+    const button = e.target.closest('.btn-delete');
+    const userId = button.getAttribute('data-id');
 
-  deleteButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      const userId = this.getAttribute('data-id');
-
-      swal({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        buttons: ["Cancel", "Yes, delete it!"],
-        dangerMode: true,
-      })
-      .then((willDelete) => {
-        if (willDelete) {
-          // Redirect to your Express delete route
-          window.location.href = `/deleteuser/${userId}`;
-        }
-      });
+    swal({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      buttons: ["Cancel", "Yes, delete it!"],
+      dangerMode: true,
+    })
+    .then((willDelete) => {
+      if (willDelete) {
+        fetch(`/deleteuser/${userId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(response => {
+          if (response.redirected) {
+            swal("Deleted!", "The user has been deleted.", "success")
+            .then(() => {
+              window.location.href = response.url;
+            });
+          } else {
+            return response.text();
+          }
+        })
+        .catch(err => {
+          console.error("Error deleting user:", err);
+          swal("Error", "Failed to delete user.", "error");
+        });
+      }
     });
-  });
+  }
 });
+
+
+
 
 $('#usersTable').DataTable({
   "paging": true,     

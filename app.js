@@ -8,7 +8,8 @@ const authRoutes = require("./src/routes/authRoute");
 const dashboardRoutes = require("./src/routes/dashboardRoute");
 const passwordRoutes = require("./src/routes/passwordRoute");
 const profileRoutes = require("./src/routes/profileRoute");
-const roleRoutes = require("./src/routes/rolesRoutes");
+const roleRoutes = require("./src/routes/rolesRoute");
+const manageUserRoutes = require("./src/routes/manageUserRoute");
 
 const { preventback } = require("./src/middleware/authMiddleware");
 
@@ -22,6 +23,15 @@ app.set("views", "./src/views");
 // Static
 app.use("/src", express.static(path.join(__dirname, "src")));
 app.use(express.static(path.join(__dirname, "public")));
+
+app.set("views", [
+  path.join(__dirname, "src/views"),
+  path.join(__dirname, "src/views/account"),
+  path.join(__dirname, "src/views/auth"),
+  path.join(__dirname, "src/views/manageuser"),
+  path.join(__dirname, "src/views/roles"),
+]);
+app.set("view engine", "ejs");
 
 // Session
 app.use(
@@ -45,6 +55,7 @@ app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(passwordRoutes);
 app.use(profileRoutes);
+app.use(manageUserRoutes);
 app.use(roleRoutes);
 
 // Start

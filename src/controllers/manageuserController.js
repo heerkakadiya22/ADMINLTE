@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 // ✅ GET ALL USERS
-exports.getalluser = (req, res) => {
+exports.getAllUser = (req, res) => {
   const id = req.session.adminId;
 
   const sql = "SELECT * FROM admin WHERE id = ?";
@@ -66,42 +66,53 @@ exports.getalluser = (req, res) => {
   });
 };
 
-exports.showadduser = (req, res) => {
+exports.showAddUser = (req, res) => {
   const id = req.session.adminId;
 
-  const sql = "SELECT * FROM admin WHERE id = ?";
-  db.query(sql, [id], (err, result) => {
-    if (err || result.length === 0) {
+  const sqlAdmin = "SELECT * FROM admin WHERE id = ?";
+  const sqlRoles = "SELECT * FROM roles";
+
+  db.query(sqlAdmin, [id], (err, adminResult) => {
+    if (err || adminResult.length === 0) {
       return res.redirect("/login");
     }
 
-    const user = result[0];
-    const imagePath = user.image
-      ? "/src/assets/image/uploads/" + user.image
+    const admin = adminResult[0];
+    const imagePath = admin.image
+      ? "/src/assets/image/uploads/" + admin.image
       : "/src/assets/image/uploads/profile-user.png";
 
-    const successMessage = req.session.success || null;
-    delete req.session.success;
+    db.query(sqlRoles, (roleErr, roleResults) => {
+      if (roleErr) {
+        console.error("Error fetching roles:", roleErr);
+        return res.status(500).send("Error loading form.");
+      }
 
-    res.render("adduser", {
-      name: user.name || "",
-      roleId: user.roleId || 0,
-      csrfToken: req.csrfToken(),
-      currentPage: "manageuser",
-      error: null,
-      success: successMessage,
-      image: imagePath,
-      pageTitle: "Add User",
-      breadcrumbs: [
-        { label: "Home", url: "/" },
-        { label: "Manage Users", url: "/manageuser" },
-        { label: "Add User" },
-      ],
+      const successMessage = req.session.success || null;
+      delete req.session.success;
+
+      res.render("adduser", {
+        name: admin.name || "",
+        roleId: admin.roleId || 0,
+        csrfToken: req.csrfToken(),
+        currentPage: "manageuser",
+        error: null,
+        success: successMessage,
+        image: imagePath,
+        pageTitle: "Add User",
+        breadcrumbs: [
+          { label: "Home", url: "/" },
+          { label: "Manage Users", url: "/manageuser" },
+          { label: "Add User" },
+        ],
+        roles: roleResults,
+      });
     });
   });
 };
 
-exports.insertuser = (req, res) => {
+// POST: Add User
+exports.addUser = (req, res) => {
   const {
     name,
     email,
@@ -113,6 +124,7 @@ exports.insertuser = (req, res) => {
     hobby,
     password,
     confirmPassword,
+    roleId,
   } = req.body;
 
   // Password confirmation
@@ -121,7 +133,11 @@ exports.insertuser = (req, res) => {
   }
 
   const image = req.file ? req.file.filename : "profile-user.png";
-  const hobbyFormatted = Array.isArray(hobby) ? hobby.join(",") : hobby;
+  const hobbyFormatted = hobby
+    ? Array.isArray(hobby)
+      ? hobby.join(",")
+      : hobby
+    : "";
 
   // Check if username or email already exists
   const checkSql = `
@@ -145,10 +161,11 @@ exports.insertuser = (req, res) => {
       return renderWithError(conflictMessage);
     }
 
+    // ✅ Insert directly with roleId
     const insertSql = `
       INSERT INTO admin 
-      (name, email, password, username, image, phone_no, address, hobby, dob, gender)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (name, email, password, username, image, phone_no, address, hobby, dob, gender, roleId)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -162,10 +179,12 @@ exports.insertuser = (req, res) => {
       hobbyFormatted,
       dob,
       gender,
+      roleId,
     ];
 
-    db.query(insertSql, values, (err) => {
-      if (err) {
+    db.query(insertSql, values, (insertErr) => {
+      if (insertErr) {
+        console.error("Insert error:", insertErr);
         return renderWithError("Failed to add user.");
       }
 
@@ -180,19 +199,30 @@ exports.insertuser = (req, res) => {
       ? "/src/assets/image/uploads/" + req.session.image
       : "/src/assets/image/uploads/profile-user.png";
 
-    res.render("adduser", {
-      name: req.session.name || "",
-      csrfToken: req.csrfToken(),
-      currentPage: "manageuser",
-      error: errorMessage,
-      success: null,
-      image: imagePath,
-      pageTitle: "Add User",
-      breadcrumbs: [
-        { label: "Home", url: "/" },
-        { label: "Manage Users", url: "/manageuser" },
-        { label: "Add User" },
-      ],
+    // Re-fetch roles for the dropdown
+    const sqlRoles = "SELECT * FROM roles";
+    db.query(sqlRoles, (roleErr, roleResults) => {
+      if (roleErr) {
+        console.error("Error fetching roles:", roleErr);
+        return res.status(500).send("Error loading form.");
+      }
+
+      res.render("adduser", {
+        name: req.session.name || "",
+        csrfToken: "",
+        currentPage: "manageuser",
+        error: errorMessage,
+        success: null,
+        image: imagePath,
+        pageTitle: "Add User",
+        breadcrumbs: [
+          { label: "Home", url: "/" },
+          { label: "Manage User", url: "/manageuser" },
+          { label: "Add User" },
+        ],
+        roles: roleResults,
+        roleId: roleId || "",
+      });
     });
   }
 };
@@ -245,7 +275,7 @@ exports.deleteUser = (req, res) => {
 };
 
 // edit user controller
-exports.showedituser = (req, res) => {
+exports.showEditUser = (req, res) => {
   const selectedUserId = req.params.id;
   const currentAdminId = req.session.adminId;
 

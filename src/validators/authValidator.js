@@ -96,16 +96,16 @@ exports.addUserValidation = [
     .withMessage("Invalid email format"),
 
   // Phone
-  body("phone")
-    .optional()
-    .matches(/^\d{10}$/)
-    .withMessage("Phone number must be 10 digits"),
+  // body("phone")
+  //   .optional()
+  //   .matches(/^\d{10}$/)
+  //   .withMessage("Phone number must be 10 digits"),
 
   // Username
-  body("username")
-    .optional()
-    .isLength({ min: 4 })
-    .withMessage("Username must be at least 4 characters"),
+  // body("username")
+  //   .optional()
+  //   .isLength({ min: 4 })
+  //   .withMessage("Username must be at least 4 characters"),
 
   // Address (optional)
   body("address")
@@ -114,7 +114,7 @@ exports.addUserValidation = [
     .withMessage("Address must be less than 200 characters"),
 
   // DOB
-  body("dob").optional().isISO8601().withMessage("Invalid date format"),
+  // body("dob").optional().isISO8601().withMessage("Invalid date format"),
 
   // Gender
   body("gender")

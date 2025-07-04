@@ -4,7 +4,7 @@ const CONFIG = require("./config");
 // Force parse DB_PORT as number, with fallback to 3306
 const dbPort = CONFIG.DB_PORT ? parseInt(CONFIG.DB_PORT) : 3306;
 
-console.log("Connecting to MySQL on", CONFIG.HOST, "port", dbPort);
+// console.log("Connecting to MySQL on", CONFIG.HOST, "port", dbPort);
 
 const db = mysql.createConnection({
   host: CONFIG.HOST,
