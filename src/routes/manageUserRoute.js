@@ -23,6 +23,7 @@ const Validation = (req, res, next) => {
 };
 
 router.get("/manageuser", csrfProtection, manageuserController.getAllUser);
+router.get("/api/users", manageuserController.apiGetAllUsers);
 
 router.get("/adduser", csrfProtection, manageuserController.showAddUser);
 router.post(

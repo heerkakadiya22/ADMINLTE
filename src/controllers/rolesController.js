@@ -1,6 +1,8 @@
 const db = require("../config/db");
 const { Role, sequelize } = require("../../models");
 
+// controllers/roleController.js
+
 exports.getAllRoles = (req, res) => {
   const id = req.session.adminId;
 
@@ -11,8 +13,7 @@ exports.getAllRoles = (req, res) => {
         csrfToken: "",
         name: "",
         image: "/src/assets/image/uploads/profile-user.png",
-        roleId: 0, // ✅ added
-        roles: [],
+        roleId: 0,
         success: null,
         currentPage: "rolelist",
         pageTitle: "Role List",
@@ -28,35 +29,28 @@ exports.getAllRoles = (req, res) => {
     const successMessage = req.session.success;
     req.session.success = null;
 
-    Role.findAll()
-      .then((roles) => {
-        res.render("rolelist", {
-          csrfToken: "",
-          name: admin.name,
-          image: imagePath,
-          roleId: admin.roleId, // ✅ added
-          roles,
-          success: successMessage,
-          currentPage: "rolelist",
-          pageTitle: "Role List",
-          breadcrumbs: [{ label: "Home", url: "/" }, { label: "Role List" }],
-        });
-      })
-      .catch((roleErr) => {
-        console.error("Error fetching roles:", roleErr);
-        res.render("rolelist", {
-          csrfToken: "",
-          name: admin.name,
-          image: imagePath,
-          roleId: admin.roleId, // ✅ added
-          roles: [],
-          success: successMessage,
-          currentPage: "rolelist",
-          pageTitle: "Role List",
-          breadcrumbs: [{ label: "Home", url: "/" }, { label: "Role List" }],
-        });
-      });
+    res.render("rolelist", {
+      csrfToken: "",
+      name: admin.name,
+      image: imagePath,
+      roleId: admin.roleId,
+      success: successMessage,
+      currentPage: "rolelist",
+      pageTitle: "Role List",
+      breadcrumbs: [{ label: "Home", url: "/" }, { label: "Role List" }],
+    });
   });
+};
+
+exports.apiGetAllRoles = (req, res) => {
+  Role.findAll()
+    .then((roles) => {
+      res.json(roles);
+    })
+    .catch((err) => {
+      console.error("Error fetching roles:", err);
+      res.status(500).json({ error: "Failed to fetch roles." });
+    });
 };
 
 // Show Create Role Form

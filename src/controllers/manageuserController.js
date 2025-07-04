@@ -1,8 +1,9 @@
 const db = require("../config/db");
 const path = require("path");
 const fs = require("fs");
+const imageHelper = require("../helpers/imageHelper");
 
-// ✅ GET ALL USERS
+// Render Manage Users page
 exports.getAllUser = (req, res) => {
   const id = req.session.adminId;
 
@@ -14,8 +15,7 @@ exports.getAllUser = (req, res) => {
         name: "",
         email: "",
         roleId: 0,
-        image: "/src/assets/image/uploads/profile-user.png",
-        user: [],
+        image: imageHelper.getImageUrl(),
         currentPage: "manageuser",
         pageTitle: "User List",
         breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
@@ -24,51 +24,41 @@ exports.getAllUser = (req, res) => {
     }
 
     const admin = result[0];
-    const imagePath =
-      "/src/assets/image/uploads/" + (admin.image || "profile-user.png");
+    const imagePath = imageHelper.getImageUrl(admin.image);
 
     const successMessage = req.session.success;
     req.session.success = null;
 
-    const userSql = `
-      SELECT a.*, r.name AS role_name
-      FROM admin a
-      LEFT JOIN roles r ON a.roleId = r.id
-    `;
-
-    db.query(userSql, (userErr, userResult) => {
-      if (userErr) {
-        return res.render("manageuser", {
-          csrfToken: req.csrfToken(),
-          name: admin.name,
-          email: admin.email,
-          roleId: admin.roleId,
-          image: imagePath,
-          user: [],
-          currentPage: "manageuser",
-          pageTitle: "User List",
-          breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
-          success: null,
-        });
-      }
-
-      res.render("manageuser", {
-        csrfToken: req.csrfToken(),
-        name: admin.name,
-        email: admin.email,
-        roleId: admin.roleId,
-        image: imagePath,
-        user: userResult,
-        currentPage: "manageuser",
-        pageTitle: "User List",
-        breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
-        success: successMessage,
-      });
+    res.render("manageuser", {
+      csrfToken: req.csrfToken(),
+      name: admin.name,
+      email: admin.email,
+      roleId: admin.roleId,
+      image: imagePath,
+      currentPage: "manageuser",
+      pageTitle: "User List",
+      breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
+      success: successMessage,
     });
   });
 };
 
-// ✅ SHOW ADD USER
+// Return users JSON
+exports.apiGetAllUsers = (req, res) => {
+  const userSql = `
+    SELECT a.*, r.name AS role_name
+    FROM admin a
+    LEFT JOIN roles r ON a.roleId = r.id
+  `;
+  db.query(userSql, (err, users) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to fetch users." });
+    }
+    res.json(users);
+  });
+};
+
+// Show Add User
 exports.showAddUser = (req, res) => {
   const id = req.session.adminId;
   const sqlAdmin = "SELECT * FROM admin WHERE id = ?";
@@ -80,9 +70,7 @@ exports.showAddUser = (req, res) => {
     }
 
     const admin = adminResult[0];
-    const imagePath = admin.image
-      ? "/src/assets/image/uploads/" + admin.image
-      : "/src/assets/image/uploads/profile-user.png";
+    const imagePath = imageHelper.getImageUrl(admin.image);
 
     db.query(sqlRoles, (roleErr, roleResults) => {
       if (roleErr) {
@@ -110,7 +98,7 @@ exports.showAddUser = (req, res) => {
   });
 };
 
-// ✅ ADD USER
+// Add User
 exports.addUser = (req, res) => {
   const {
     name,
@@ -130,7 +118,7 @@ exports.addUser = (req, res) => {
     return renderWithError("Passwords do not match.");
   }
 
-  const image = req.file ? req.file.filename : "profile-user.png";
+  const image = req.file ? req.file.filename : imageHelper.getDefaultImage();
   const hobbyFormatted = hobby
     ? Array.isArray(hobby)
       ? hobby.join(",")
@@ -188,16 +176,14 @@ exports.addUser = (req, res) => {
         return res.redirect("/login");
       }
       const admin = adminResult[0];
-      const imagePath = admin.image
-        ? "/src/assets/image/uploads/" + admin.image
-        : "/src/assets/image/uploads/profile-user.png";
+      const imagePath = imageHelper.getImageUrl(admin.image);
 
       db.query(sqlRoles, (roleErr, roleResults) => {
         res.render("userForm", {
           isEdit: false,
           name: admin.name,
           roleId: admin.roleId,
-          csrfToken: req.csrfToken(),
+          csrfToken: "",
           currentPage: "manageuser",
           error: errorMessage,
           success: null,
@@ -215,7 +201,7 @@ exports.addUser = (req, res) => {
   }
 };
 
-// ✅ SHOW EDIT USER
+// Show Edit User
 exports.showEditUser = (req, res) => {
   const userId = req.params.id;
   const adminId = req.session.adminId;
@@ -235,15 +221,16 @@ exports.showEditUser = (req, res) => {
         return res.redirect("/login");
       }
       const admin = adminResult[0];
+      const adminImage = imageHelper.getImageUrl(admin.image);
 
       db.query(getRolesSql, (err3, roles) => {
         const dobFormatted = user.dob
           ? (() => {
               const d = new Date(user.dob);
-              const yyyy = d.getFullYear();
-              const mm = String(d.getMonth() + 1).padStart(2, "0");
-              const dd = String(d.getDate()).padStart(2, "0");
-              return `${yyyy}-${mm}-${dd}`;
+              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+                2,
+                "0"
+              )}-${String(d.getDate()).padStart(2, "0")}`;
             })()
           : "";
 
@@ -255,8 +242,7 @@ exports.showEditUser = (req, res) => {
           currentPage: "manageuser",
           error: null,
           success: null,
-          image:
-            "/src/assets/image/uploads/" + (admin.image || "profile-user.png"),
+          image: adminImage,
           pageTitle: "Edit User",
           breadcrumbs: [
             { label: "Home", url: "/" },
@@ -273,8 +259,7 @@ exports.showEditUser = (req, res) => {
           editDob: dobFormatted,
           editGender: user.gender,
           editHobby: user.hobby ? user.hobby.split(",") : [],
-          editImage:
-            "/src/assets/image/uploads/" + (user.image || "profile-user.png"),
+          editImage: imageHelper.getImageUrl(user.image),
           editRoleId: user.roleId,
         });
       });
@@ -282,7 +267,7 @@ exports.showEditUser = (req, res) => {
   });
 };
 
-// ✅ UPDATE USER
+// Update User
 exports.updateUser = (req, res) => {
   const {
     id,
@@ -308,11 +293,11 @@ exports.updateUser = (req, res) => {
     if (err || result.length === 0) {
       return res.status(500).send("User not found.");
     }
-    const oldImage = result[0].image || "profile-user.png";
+    const oldImage = result[0].image || imageHelper.getDefaultImage();
     const finalImage = newImage || oldImage;
 
-    if (newImage && oldImage !== "profile-user.png") {
-      const oldPath = path.join(__dirname, "../assets/image/uploads", oldImage);
+    if (newImage && oldImage !== imageHelper.getDefaultImage()) {
+      const oldPath = imageHelper.getImagePath(oldImage);
       fs.unlink(oldPath, (unlinkErr) => {
         if (unlinkErr && unlinkErr.code !== "ENOENT") {
           console.error("Failed to delete old image:", unlinkErr);
@@ -372,11 +357,11 @@ exports.updateUser = (req, res) => {
           isEdit: true,
           name: req.session.name,
           roleId: req.session.roleId,
-          csrfToken: req.csrfToken(),
+          csrfToken: "",
           currentPage: "manageuser",
           error: errorMessage,
           success: null,
-          image: "/src/assets/image/uploads/" + finalImage,
+          image: imageHelper.getImageUrl(finalImage),
           pageTitle: "Edit User",
           breadcrumbs: [
             { label: "Home", url: "/" },
@@ -393,7 +378,7 @@ exports.updateUser = (req, res) => {
           editDob: formattedDob,
           editGender: gender,
           editHobby: hobby ? (Array.isArray(hobby) ? hobby : [hobby]) : [],
-          editImage: "/src/assets/image/uploads/" + finalImage,
+          editImage: imageHelper.getImageUrl(finalImage),
           editRoleId: roleId || null,
         });
       });
@@ -401,7 +386,7 @@ exports.updateUser = (req, res) => {
   });
 };
 
-// ✅ DELETE USER
+// Delete User
 exports.deleteUser = (req, res) => {
   const userId = req.params.id;
 
@@ -415,15 +400,12 @@ exports.deleteUser = (req, res) => {
     const deleteSql = "DELETE FROM admin WHERE id = ?";
 
     db.query(deleteSql, [userId], (err2) => {
-      if (!err2 && image && image !== "profile-user.png") {
-        const imagePath = path.join(
-          __dirname,
-          "../assets/image/uploads",
-          image
-        );
+      if (!err2 && image && image !== imageHelper.getDefaultImage()) {
+        const imagePath = imageHelper.getImagePath(image);
         fs.unlink(imagePath, (unlinkErr) => {
-          if (unlinkErr && unlinkErr.code !== "ENOENT")
+          if (unlinkErr && unlinkErr.code !== "ENOENT") {
             console.error("Image delete failed:", unlinkErr);
+          }
         });
       }
 

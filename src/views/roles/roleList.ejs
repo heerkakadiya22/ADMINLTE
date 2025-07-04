@@ -1,163 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>AdminLTE | Role List</title>
-        <%- include('partials/head') %>
-        <script
-            src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-        <link rel="stylesheet" href="/src/assets/css/style.css">
-    </head>
-    <body class="hold-transition sidebar-mini">
-        <div class="wrapper">
-            <%- include('partials/sidebar', { name: name, image: image, roleId:
-            roleId,
-            csrfToken: csrfToken }) %>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AdminLTE | Role List</title>
+    <%- include('partials/head') %>
+    <script
+      src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
+  </head>
+  <body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+      <%- include('partials/sidebar', { name: name, image: image, roleId:
+      roleId,
+      csrfToken: csrfToken }) %>
 
-            <div class="content-wrapper">
-                <%- include('partials/contentHeader', { pageTitle: pageTitle,
-                breadcrumbs: breadcrumbs }) %>
+      <div class="content-wrapper">
+        <%- include('partials/contentHeader', { pageTitle: pageTitle,
+        breadcrumbs: breadcrumbs }) %>
 
-                <section class="content">
-                    <div class="container-fluid">
-                        <div class="card">
-                            <div class="card-body p-0">
+        <section class="content">
+          <div class="container-fluid">
+            <div class="card">
+              <div class="card-body p-0">
 
-                                <table class="table table-striped"
-                                    id="usersTable">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Name</th>
-                                            <th>Active</th>
-                                            <th>Description</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% if (roles && roles.length > 0) { %>
-                                        <% roles.forEach((role, index) => { %>
-                                        <tr>
-                                            <td><%= index + 1 %></td>
-                                            <td><%= role.name %></td>
-                                            <td>
-                                                <% if (role.active) { %>
-                                                <i
-                                                    class="fas fa-check text-success"></i>
-                                                <% } else { %>
-                                                <i
-                                                    class="fas fa-times text-danger"></i>
-                                                <% } %>
-                                            </td>
-                                            <td><%= role.description || 'N/A'
-                                                %></td>
-                                            <td>
-                                                <a class="btn btn-info btn-sm"
-                                                    href="/roles/<%= role.id %>/edit">
-                                                    <i
-                                                        class="fas fa-pencil-alt"></i>
-                                                    Edit
-                                                </a>
-                                                <button
-                                                    class="btn btn-danger btn-sm btn-delete-role"
-                                                    data-id="<%= role.id %>">
-                                                    <i class="fas fa-trash"></i>
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                        <% } else { %>
-                                        <tr>
-                                            <td colspan="5"
-                                                class="text-center text-muted">No
-                                                roles found.</td>
-                                        </tr>
-                                        <% } %>
-                                    </tbody>
+                <table class="table table-striped"
+                  id="rolesTable">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Active</th>
+                      <th>Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rolesTableBody">
+                    <tr><td colspan="5" class="text-center text-muted">Loading
+                        roles...</td></tr>
+                  </tbody>
 
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                </table>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
+      </div>
+    </div>
 
-        <%- include('partials/scripts') %>
-        <script>
- document.addEventListener('DOMContentLoaded', function() {
-  const deleteButtons = document.querySelectorAll('.btn-delete-role');
-
-  deleteButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      const roleId = this.getAttribute('data-id');
-
-      swal({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        buttons: ["Cancel", "Yes, delete it!"],
-        dangerMode: true,
-      })
-      .then((willDelete) => {
-        if (willDelete) {
-          fetch(`/roles/${roleId}/delete`, {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Requested-With": "XMLHttpRequest"
-            }
-          })
-          .then(response => {
-            if (response.redirected) {
-              swal("Deleted!", "The role has been deleted.", "success")
-              .then(() => {
-                window.location.href = response.url;
-              });
-            } else {
-              return response.text();
-            }
-          })
-          .catch(err => {
-            console.error("Error deleting role:", err);
-            swal("Error", "Failed to delete role.", "error");
-          });
-        }
-      });
-    });
-  });
-});
-
-
-    // DataTable
-    $('#usersTable').DataTable({
-      paging: true,
-      lengthChange: true,
-      searching: true,
-      ordering: false,
-      info: true,
-      autoWidth: false,
-      responsive: true,
-      pageLength: 5,
-      lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
-      language: {
-        lengthMenu: '_MENU_',
-        searchPlaceholder: 'Search roles...'
-      },
-      dom:
-        "<'d-flex align-items-center justify-content-between flex-wrap mb-2 mt-2'<'custom-title'><'d-flex align-items-center ml-auto' f l <'custom-addrole'>>>" +
-        "rt" +
-        "<'row'<'col-md-6'i><'col-md-6'p>>",
-    });
-
-    $('.custom-title').html('<h3 class="card-title m-3">All Roles</h3>');
-    $('.custom-addrole').html(`
-      <a href="/addrole" class="btn btn-primary mr-3 ml-2 mb-2">
-        <i class="nav-icon fas fa-plus"></i> Add Role
-      </a>
-    `);
-  </script>
-    </body>
+    <%- include('partials/scripts') %>
+    <script src="/src/assets/jquery/ajaxJquery.js"></script>
+  </body>
 </html>
