@@ -1,6 +1,8 @@
 const path = require("path");
 const db = require("../config/db");
 const fs = require("fs");
+const imageHelper = require("../helpers/imageHelper");
+const dobHelper = require("../helpers/dobHelper");
 
 // ✅ GET: Show edit profile
 exports.showEditProfile = (req, res) => {
@@ -25,21 +27,7 @@ exports.showEditProfile = (req, res) => {
     }
 
     const user = result[0];
-
-    const dobFormatted = user.dob
-      ? (() => {
-          const parsedDate = new Date(user.dob);
-          if (!isNaN(parsedDate)) {
-            return new Date(
-              parsedDate.getTime() - parsedDate.getTimezoneOffset() * 60000
-            )
-              .toISOString()
-              .split("T")[0];
-          }
-          return "";
-        })()
-      : "";
-
+    const dobFormatted = dobHelper.formatDob(user.dob);
     const hobbyArray = user.hobby ? user.hobby.split(",") : [];
 
     db.query(getRolesSql, (roleErr, roleResults) => {
@@ -54,7 +42,6 @@ exports.showEditProfile = (req, res) => {
         });
       }
 
-      // ✅ Keep success message before clearing
       const successMessage = req.session.successMsg;
       req.session.successMsg = null;
 
@@ -70,7 +57,7 @@ exports.showEditProfile = (req, res) => {
   });
 };
 
-// ✅ Helper to render profile
+// ✅ Helper to render profile page
 function renderProfile({
   res,
   user = {},
@@ -92,11 +79,11 @@ function renderProfile({
     roleId: user.roleId || 0,
     roleName: user.roleName || "",
     roles,
-    image: "/src/assets/image/uploads/" + (user.image || "profile-user.png"),
+    image: imageHelper.getImageUrl(user.image),
     error,
     success,
     csrfToken: res.locals._csrf || "",
-    currentPage: "editprofile",
+    currentPage: "index",
     pageTitle: "User Profile",
     breadcrumbs: [{ label: "Home", url: "/" }, { label: "User Profile" }],
   });
@@ -124,23 +111,17 @@ exports.updateProfile = (req, res) => {
     }
 
     const user = result[0];
-    const currentImage = user.image || "profile-user.png";
+    const currentImage = user.image || imageHelper.getDefaultImage();
     const imageToUse = newImage || currentImage;
 
     // ✅ Delete old image if needed
-    if (newImage && currentImage !== "profile-user.png") {
-      const oldImagePath = path.join(
-        __dirname,
-        "../assets/image/uploads",
-        currentImage
-      );
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlink(oldImagePath, (unlinkErr) => {
-          if (unlinkErr) {
-            console.error("Error deleting old image:", unlinkErr);
-          }
-        });
-      }
+    if (newImage && currentImage !== imageHelper.getDefaultImage()) {
+      const oldImagePath = imageHelper.getImagePath(currentImage);
+      fs.unlink(oldImagePath, (unlinkErr) => {
+        if (unlinkErr && unlinkErr.code !== "ENOENT") {
+          console.error("Error deleting old image:", unlinkErr);
+        }
+      });
     }
 
     // ✅ Normalize hobbies
@@ -150,6 +131,9 @@ exports.updateProfile = (req, res) => {
       hobby = [hobby];
     }
     const hobbyString = hobby.join(",");
+
+    // ✅ Format DOB safely
+    const formattedDob = dob || null;
 
     // ✅ Check for duplicate username/email
     const checkSql = `
@@ -191,7 +175,7 @@ exports.updateProfile = (req, res) => {
         username,
         imageToUse,
         address,
-        dob,
+        formattedDob,
         gender,
         phone,
         hobbyString,
@@ -216,7 +200,7 @@ exports.updateProfile = (req, res) => {
       });
     });
 
-    // ✅ Helper to render form with error + roles
+    // ✅ Helper to render form with error
     function renderWithError(errorMessage, roleResults) {
       if (!roleResults || roleResults.length === 0) {
         db.query(getRolesSql, (roleErr, roles) => {
@@ -231,25 +215,25 @@ exports.updateProfile = (req, res) => {
       }
     }
 
-    // Helper to actually render
+    // ✅ Helper to actually render
     function renderPage(errorMessage, roles) {
       res.render("editProfile", {
         name,
         email,
         username,
         address,
-        dob,
+        dob: dobHelper.formatDob(dob),
         gender,
         phone,
         hobby: Array.isArray(hobby) ? hobby : hobby ? [hobby] : [],
         roleId: roleId || user.roleId || 0,
         roleName: user.roleName || "",
         roles,
-        image: "/src/assets/image/uploads/" + imageToUse,
+        image: imageHelper.getImageUrl(imageToUse),
         error: errorMessage,
         success: null,
-        csrfToken: req.csrfToken(),
-        currentPage: "editprofile",
+        csrfToken: "",
+        currentPage: "index",
         pageTitle: "User Profile",
         breadcrumbs: [{ label: "Home", url: "/" }, { label: "User Profile" }],
       });

@@ -1,7 +1,7 @@
 const db = require("../config/db");
-const path = require("path");
 const fs = require("fs");
 const imageHelper = require("../helpers/imageHelper");
+const dobHelper = require("../helpers/dobHelper");
 
 // Render Manage Users page
 exports.getAllUser = (req, res) => {
@@ -183,7 +183,7 @@ exports.addUser = (req, res) => {
           isEdit: false,
           name: admin.name,
           roleId: admin.roleId,
-          csrfToken: "",
+          csrfToken: req.csrfToken(),
           currentPage: "manageuser",
           error: errorMessage,
           success: null,
@@ -222,18 +222,9 @@ exports.showEditUser = (req, res) => {
       }
       const admin = adminResult[0];
       const adminImage = imageHelper.getImageUrl(admin.image);
+      const dobFormatted = dobHelper.formatDob(user.dob);
 
       db.query(getRolesSql, (err3, roles) => {
-        const dobFormatted = user.dob
-          ? (() => {
-              const d = new Date(user.dob);
-              return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-                2,
-                "0"
-              )}-${String(d.getDate()).padStart(2, "0")}`;
-            })()
-          : "";
-
         res.render("userForm", {
           isEdit: true,
           name: admin.name,

@@ -279,65 +279,12 @@
     <%- include('partials/scripts') %>
 
     <script src="/src/assets/js/authjs.js"></script>
-
     <!-- Load jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <script>
-$(function() {
-  console.log("✅ Asterisk script running.");
-
-  $("<style>")
-    .prop("type", "text/css")
-    .html(".required-star { color: red; margin-left: 3px; }")
-    .appendTo("head");
-
-  var requiredFields = ["name", "email", "username"];
-
-  requiredFields.forEach(function(fieldName) {
-    var $field = $("#editProfileForm").find("[name='" + fieldName + "']");
-    var id = $field.attr("id");
-    var $label;
-
-    console.log("Checking field:", fieldName, "ID:", id);
-
-    if (id) {
-      $label = $("label[for='" + id + "']");
-    }
-
-    if (!$label || $label.length === 0) {
-      $label = $field.closest(".form-group").find("label").first();
-    }
-
-    if (!$label || $label.length === 0) {
-      console.warn("No label found for field:", fieldName);
-      return;
-    }
-
-    var $asterisk = $('<span class="required-star">*</span>');
-    $label.append($asterisk);
-
-    if ($field.val().trim() !== "") {
-      $asterisk.hide();
-    }
-
-    $field.on("input change", function() {
-      if ($field.val().trim() === "") {
-        $asterisk.fadeIn();
-      } else {
-        $asterisk.fadeOut();
-      }
-    });
-  });
-});
-
-
-</script>
-
+    <script src="/src/assets/jquery/ajaxJquery.js"></script>
     <!-- ✅ jQuery Validate -->
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-
     <script>
         // edit proflie
 $.validator.addMethod(
@@ -350,29 +297,6 @@ $.validator.addMethod(
     return param.test(value);
   },
   "Invalid format."
-);
-
-$.validator.addMethod(
-  "genderValid",
-  function (value, element) {
-    if (value === "") {
-      return true; // allow empty
-    }
-    return value === "Male" || value === "Female";
-  },
-  "Gender must be Male or Female"
-);
-
-$.validator.addMethod(
-  "isoDate",
-  function (value, element) {
-    if (value === "") {
-      return true; // allow empty
-    }
-    // Simple regex for YYYY-MM-DD format
-    return /^\d{4}-\d{2}-\d{2}$/.test(value);
-  },
-  "Please enter a valid date (YYYY-MM-DD)"
 );
 
 $(function () {
@@ -388,7 +312,6 @@ $(function () {
       },
       phone: {
         digits: true,
-        minlength: 10,
         maxlength: 10,
       },
       address: {
@@ -396,13 +319,6 @@ $(function () {
       },
       username: {
         minlength: 4,
-      },
-      gender: {
-        genderValid: true,
-      },
-      hobby: {},
-      dob: {
-        isoDate: true,
       },
     },
     messages: {
@@ -424,12 +340,6 @@ $(function () {
       },
       username: {
         minlength: "Username must be at least 4 characters",
-      },
-      gender: {
-        genderValid: "Gender must be Male or Female",
-      },
-      dob: {
-        isoDate: "Please enter a valid date in YYYY-MM-DD format",
       },
     },
     errorElement: "label",

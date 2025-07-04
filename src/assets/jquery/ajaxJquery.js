@@ -40,7 +40,8 @@ $(document).ready(function () {
         paging: true,
         lengthChange: true,
         searching: true,
-        ordering: false,
+        ordering: true,
+        order: [[0, "desc"]],
         info: true,
         autoWidth: false,
         responsive: true,
@@ -172,7 +173,8 @@ $(document).ready(function () {
         paging: true,
         lengthChange: true,
         searching: true,
-        ordering: false,
+        ordering: true,
+        order: [[0, "desc"]],
         info: true,
         autoWidth: false,
         responsive: true,
@@ -247,4 +249,51 @@ document.addEventListener("click", function (e) {
       }
     });
   }
+});
+
+$(function () {
+  console.log("✅ Asterisk script running.");
+
+  $("<style>")
+    .prop("type", "text/css")
+    .html(".required-star { color: red; margin-left: 3px; }")
+    .appendTo("head");
+
+  var requiredFields = ["name", "email", "username", "roleId"];
+
+  requiredFields.forEach(function (fieldName) {
+    var $field = $("#editProfileForm").find("[name='" + fieldName + "']");
+    var id = $field.attr("id");
+    var $label;
+
+    console.log("Checking field:", fieldName, "ID:", id);
+
+    if (id) {
+      $label = $("label[for='" + id + "']");
+    }
+
+    if (!$label || $label.length === 0) {
+      $label = $field.closest(".form-group").find("label").first();
+    }
+
+    if (!$label || $label.length === 0) {
+      console.warn("No label found for field:", fieldName);
+      return;
+    }
+
+    var $asterisk = $('<span class="required-star">*</span>');
+    $label.append($asterisk);
+
+    if ($field.val().trim() !== "") {
+      $asterisk.hide();
+    }
+
+    $field.on("input change", function () {
+      if ($field.val().trim() === "") {
+        $asterisk.fadeIn();
+      } else {
+        $asterisk.fadeOut();
+      }
+    });
+  });
 });
