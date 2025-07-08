@@ -1,331 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title><%= isEdit ? "Edit User" : "Add User" %></title>
-        <%- include('partials/head') %>
-        <link rel="stylesheet" href="/src/assets/css/style.css">
-    </head>
-    <body class="hold-transition sidebar-mini layout-fixed">
-        <div class="wrapper">
-            <%- include('partials/sidebar', {
-            name: name,
-            csrfToken: csrfToken || '',
-            roleId: roleId,
-            currentPage: currentPage
-            }) %>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= isEdit ? "Edit User" : "Add User" %></title>
+    <%- include('partials/head') %>
+    <link rel="stylesheet" href="/src/assets/css/style.css">
+  </head>
+  <body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+      <%- include('partials/sidebar', {
+      name: name,
+      csrfToken: csrfToken || '',
+      roleId: roleId,
+      currentPage: currentPage
+      }) %>
 
-            <div class="content-wrapper">
-                <%- include('partials/contentHeader', {
-                pageTitle: pageTitle,
-                breadcrumbs: breadcrumbs
-                }) %>
+      <div class="content-wrapper">
+        <%- include('partials/contentHeader', {
+        pageTitle: pageTitle,
+        breadcrumbs: breadcrumbs
+        }) %>
 
-                <section class="content">
-                    <div class="container-fluid">
-                        <div class="row justify-content-center">
-                            <div class="card" style="width: 102%;">
-                                <div class="card-body">
+        <section class="content">
+          <div class="container-fluid">
+            <div class="row justify-content-center">
+              <div class="card" style="width: 102%;">
+                <div class="card-body">
 
-                                    <% if (error) { %>
-                                    <div id="errorMsg"
-                                        class="alert alert-danger">
-                                        <%= error %>
-                                    </div>
-                                    <% } %>
+                  <% if (error) { %>
+                  <div id="errorMsg"
+                    class="alert alert-danger">
+                    <%= error %>
+                  </div>
+                  <% } %>
 
-                                    <form
-                                        action="<%= isEdit ? '/edituser' : '/adduser' %>"
-                                        method="POST"
-                                        enctype="multipart/form-data"
-                                        id="userForm">
-                                        <% if (isEdit) { %>
-                                        <input type="hidden" name="id"
-                                            value="<%= editId %>">
-                                        <% } %>
+                  <form
+                    action="<%= isEdit ? '/edituser' : '/adduser' %>"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    id="userForm">
+                    <% if (isEdit) { %>
+                    <input type="hidden" name="id"
+                      value="<%= editId %>">
+                    <% } %>
 
-                                        <div class="text-center mb-4">
-                                            <div class="profile-image-wrapper">
-                                                <img
-                                                    src="<%= isEdit ? editImage : '/src/assets/image/uploads/profile-user.png' %>"
-                                                    alt="User Avatar"
-                                                    id="previewImg" />
-                                                <label for="imageUpload">
-                                                    <i
-                                                        class="fas fa-camera text-white"></i>
-                                                </label>
-                                                <input type="file"
-                                                    id="imageUpload"
-                                                    name="image"
-                                                    accept="image/*" />
-                                            </div>
-                                        </div>
-
-                                        <!-- Name -->
-                                        <div class="form-group">
-                                            <label for="name">Full Name</label>
-                                            <input
-                                                type="text"
-                                                class="form-control"
-                                                name="name"
-                                                id="name"
-                                                placeholder="Full Name"
-                                                value="<%= isEdit ? editName : '' %>"
-                                                required />
-                                        </div>
-
-                                        <!-- Email & Phone -->
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label for="email">Email</label>
-                                                <input
-                                                    type="email"
-                                                    class="form-control"
-                                                    name="email"
-                                                    id="email"
-                                                    placeholder="Email"
-                                                    value="<%= isEdit ? editEmail : '' %>"
-                                                    required />
-                                            </div>
-                                            <div class="form-group col-md-6">
-                                                <label>Phone Number</label>
-                                                <input
-                                                    type="text"
-                                                    class="form-control"
-                                                    name="phone"
-                                                    id="phone"
-                                                    placeholder="Phone Number"
-                                                    value="<%= isEdit ? editPhone : '' %>" />
-                                            </div>
-                                        </div>
-
-                                        <!-- Username & Role -->
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label
-                                                    for="username">Username</label>
-                                                <input
-                                                    type="text"
-                                                    class="form-control"
-                                                    name="username"
-                                                    id="username"
-                                                    placeholder="Username"
-                                                    value="<%= isEdit ? editUsername : '' %>"
-                                                    required />
-                                            </div>
-                                            <div class="form-group col-md-6">
-                                                <label for="roleId">Select
-                                                    Role</label>
-                                                <select id="roleId"
-                                                    name="roleId"
-                                                    class="form-control"
-                                                    required>
-                                                    <option value disabled
-                                                        <%=isEdit ? '' :
-                                                        'selected' %>>Select
-                                                        Role</option>
-                                                    <% roles.forEach(role => {
-                                                    %>
-                                                    <option
-                                                        value="<%= role.id %>"
-                                                        <%=isEdit && role.id ===
-                                                        editRoleId ? 'selected'
-                                                        : '' %>>
-                                                        <%= role.name %>
-                                                    </option>
-                                                    <% }) %>
-                                                </select>
-
-                                            </div>
-                                        </div>
-
-                                        <!-- Address -->
-                                        <div class="form-group">
-                                            <label>Address</label>
-                                            <textarea
-                                                name="address"
-                                                class="form-control"
-                                                placeholder="Address"><%= isEdit ? editAddress : '' %></textarea>
-                                        </div>
-
-                                        <!-- DOB & Gender -->
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label>Date of Birth</label>
-                                                <input
-                                                    type="date"
-                                                    class="form-control"
-                                                    name="dob"
-                                                    value="<%= isEdit ? editDob : '' %>" />
-                                            </div>
-                                            <div class="form-group col-md-6">
-                                                <label>Gender</label><br />
-                                                <% const genders = ['Male',
-                                                'Female']; %>
-                                                <% genders.forEach(g => { %>
-                                                <div
-                                                    class="form-check form-check-inline">
-                                                    <input
-                                                        class="form-check-input"
-                                                        type="radio"
-                                                        name="gender"
-                                                        value="<%= g %>"
-                                                        <%=((isEdit &&
-                                                        editGender === g) ||
-                                                        (!isEdit && g ===
-                                                        'Male')) ? 'checked' :
-                                                        '' %>
-                                                    />
-                                                    <label
-                                                        class="form-check-label"><%=
-                                                        g %></label>
-                                                </div>
-                                                <% }); %>
-                                            </div>
-                                        </div>
-
-                                        <!-- Hobby -->
-                                        <div class="form-group">
-                                            <label>Hobby</label><br />
-                                            <% const hobbiesList = [
-                                            "Singing", "Dancing", "Travelling",
-                                            "Drawing",
-                                            "Gym", "Hike", "Gaming", "Sports",
-                                            "Coding", "Other"
-                                            ]; %>
-                                            <% hobbiesList.forEach(h => { %>
-                                            <div
-                                                class="form-check form-check-inline">
-                                                <input
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    name="hobby"
-                                                    value="<%= h %>"
-                                                    <%=isEdit &&
-                                                    Array.isArray(editHobby) &&
-                                                    editHobby.includes(h) ?
-                                                    'checked' : '' %>
-                                                />
-                                                <label
-                                                    class="form-check-label"><%=
-                                                    h %></label>
-                                            </div>
-                                            <% }); %>
-                                        </div>
-
-                                        <!-- Password fields only in Add mode -->
-                                        <% if (!isEdit) { %>
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6">
-                                                <label
-                                                    for="password">Password</label>
-                                                <div class="input-group">
-                                                    <input
-                                                        type="password"
-                                                        class="form-control"
-                                                        name="password"
-                                                        id="password"
-                                                        placeholder="Password" />
-                                                    <div
-                                                        class="input-group-append">
-                                                        <span
-                                                            class="input-group-text"
-                                                            style="cursor:pointer;"
-                                                            onclick="togglePassword('password','eyeIcon1')">
-                                                            <i id="eyeIcon1"
-                                                                class="fa-solid fa-eye"></i>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group col-md-6">
-                                                <label
-                                                    for="confirmPassword">Confirm
-                                                    Password</label>
-                                                <div class="input-group">
-                                                    <input
-                                                        type="password"
-                                                        class="form-control"
-                                                        name="confirmPassword"
-                                                        id="confirmPassword"
-                                                        placeholder="Retype Password" />
-                                                    <div
-                                                        class="input-group-append">
-                                                        <span
-                                                            class="input-group-text"
-                                                            style="cursor:pointer;"
-                                                            onclick="togglePassword('confirmPassword','eyeIcon2')">
-                                                            <i id="eyeIcon2"
-                                                                class="fa-solid fa-eye"></i>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <% } %>
-
-                                        <!-- Submit -->
-                                        <div
-                                            class="form-group text-center mt-4">
-                                            <button type="submit"
-                                                class="btn btn-success btn-lg w-100">
-                                                <%= isEdit ? 'Save Changes' :
-                                                'Add User' %>
-                                            </button>
-                                        </div>
-                                    </form>
-
-                                    <div class="text-center mt-2">
-                                        <a href="/manageuser"
-                                            class="text-muted">← Go Back</a>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
+                    <div class="text-center mb-4">
+                      <div class="profile-image-wrapper">
+                        <img
+                          src="<%= isEdit ? editImage : '/src/assets/image/uploads/profile-user.png' %>"
+                          alt="User Avatar"
+                          id="previewImg" />
+                        <label for="imageUpload">
+                          <i
+                            class="fas fa-camera text-white"></i>
+                        </label>
+                        <input type="file"
+                          id="imageUpload"
+                          name="image"
+                          accept="image/*" />
+                      </div>
                     </div>
-                </section>
+
+                    <!-- Name -->
+                    <div class="form-group">
+                      <label for="name">Full Name</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="name"
+                        id="name"
+                        placeholder="Full Name"
+                        value="<%= isEdit ? editName : '' %>"
+                        required />
+                    </div>
+
+                    <!-- Email & Phone -->
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label for="email">Email</label>
+                        <input
+                          type="email"
+                          class="form-control"
+                          name="email"
+                          id="email"
+                          placeholder="Email"
+                          value="<%= isEdit ? editEmail : '' %>"
+                          required />
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label>Phone Number</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="phone"
+                          id="phone"
+                          placeholder="Phone Number"
+                          value="<%= isEdit ? editPhone : '' %>" />
+                      </div>
+                    </div>
+
+                    <!-- Username & Role -->
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label
+                          for="username">Username</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="username"
+                          id="username"
+                          placeholder="Username"
+                          value="<%= isEdit ? editUsername : '' %>"
+                          required />
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label for="roleId">Select Role</label>
+                        <select id="roleId" name="roleId" class="form-control"
+                          required
+                          data-selected="<%= editRoleId %>">
+                          <option value disabled selected>Select Role</option>
+                        </select>
+
+                      </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="form-group">
+                      <label>Address</label>
+                      <textarea
+                        name="address"
+                        class="form-control"
+                        placeholder="Address"><%= isEdit ? editAddress : '' %></textarea>
+                    </div>
+
+                    <!-- DOB & Gender -->
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label>Date of Birth</label>
+                        <input
+                          type="date"
+                          class="form-control"
+                          name="dob"
+                          value="<%= isEdit ? editDob : '' %>" />
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label>Gender</label><br />
+                        <% const genders = ['Male',
+                        'Female']; %>
+                        <% genders.forEach(g => { %>
+                        <div
+                          class="form-check form-check-inline">
+                          <input
+                            class="form-check-input"
+                            type="radio"
+                            name="gender"
+                            value="<%= g %>"
+                            <%=((isEdit &&
+                            editGender === g) ||
+                            (!isEdit && g ===
+                            'Male')) ? 'checked' :
+                            '' %>
+                          />
+                          <label
+                            class="form-check-label"><%=
+                            g %></label>
+                        </div>
+                        <% }); %>
+                      </div>
+                    </div>
+
+                    <!-- Hobby -->
+                    <div class="form-group">
+                      <label>Hobby</label><br />
+                      <% const hobbiesList = [
+                      "Singing", "Dancing", "Travelling",
+                      "Drawing",
+                      "Gym", "Hike", "Gaming", "Sports",
+                      "Coding", "Other"
+                      ]; %>
+                      <% hobbiesList.forEach(h => { %>
+                      <div
+                        class="form-check form-check-inline">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          name="hobby"
+                          value="<%= h %>"
+                          <%=isEdit &&
+                          Array.isArray(editHobby) &&
+                          editHobby.includes(h) ?
+                          'checked' : '' %>
+                        />
+                        <label
+                          class="form-check-label"><%=
+                          h %></label>
+                      </div>
+                      <% }); %>
+                    </div>
+
+                    <!-- Password fields only in Add mode -->
+                    <% if (!isEdit) { %>
+                    <div class="form-row">
+                      <div class="form-group col-md-6">
+                        <label
+                          for="password">Password</label>
+                        <div class="input-group">
+                          <input
+                            type="password"
+                            class="form-control"
+                            name="password"
+                            id="password"
+                            placeholder="Password" />
+                          <div
+                            class="input-group-append">
+                            <span
+                              class="input-group-text"
+                              style="cursor:pointer;"
+                              onclick="togglePassword('password','eyeIcon1')">
+                              <i id="eyeIcon1"
+                                class="fa-solid fa-eye"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group col-md-6">
+                        <label
+                          for="confirmPassword">Confirm
+                          Password</label>
+                        <div class="input-group">
+                          <input
+                            type="password"
+                            class="form-control"
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            placeholder="Retype Password" />
+                          <div
+                            class="input-group-append">
+                            <span
+                              class="input-group-text"
+                              style="cursor:pointer;"
+                              onclick="togglePassword('confirmPassword','eyeIcon2')">
+                              <i id="eyeIcon2"
+                                class="fa-solid fa-eye"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <% } %>
+
+                    <!-- Submit -->
+                    <div
+                      class="form-group text-center mt-4">
+                      <button type="submit"
+                        class="btn btn-success btn-lg w-100">
+                        <%= isEdit ? 'Save Changes' :
+                        'Add User' %>
+                      </button>
+                    </div>
+                  </form>
+
+                  <div class="text-center mt-2">
+                    <a href="/manageuser"
+                      class="text-muted">← Go Back</a>
+                  </div>
+
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
+        </section>
+      </div>
+    </div>
 
-        <%- include('partials/scripts') %>
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <%- include('partials/scripts') %>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="/src/assets/jquery/ajaxJquery.js"></script>
 
-        <script> $(function() {
-  // Define the fields you want to target
-  var requiredFields = ["name", "email","username", "password", "confirmPassword","roleId"];
-
-  requiredFields.forEach(function(fieldName) {
-    var $field = $("#userForm").find("[name='" + fieldName + "']");
-    var id = $field.attr("id");
-
-    if (id) {
-      // Create the asterisk span
-      var $asterisk = $('<span class="required-star" style="color:red; margin-left:3px">*</span>');
-
-      // Append it to the label
-      $("label[for='" + id + "']").append($asterisk);
-
-      // Show or hide based on initial value
-      if ($field.val().trim() !== "") {
-        $asterisk.hide();
-      }
-
-      // Listen to input changes
-      $field.on("input change", function() {
-        if ($field.val().trim() === "") {
-          $asterisk.fadeIn();
-        } else {
-          $asterisk.fadeOut();
-        }
-      });
-    }
-  });
-});</script>
-
-        <script> $.validator.addMethod("pattern", function (value, element, param) {
+    <script> $.validator.addMethod("pattern", function (value, element, param) {
     if (this.optional(element)) return true;
     if (typeof param === "string") {
       param = new RegExp(param);
@@ -418,8 +372,37 @@
     });
   });
 </script>
+    <script>
+$(document).ready(function() {
+  var $roleSelect = $("#roleId");
+  var selectedRoleId = $roleSelect.data("selected");
 
-        <script src="/src/assets/js/authjs.js"></script>
-        <!-- Your custom validation and togglePassword logic here -->
-    </body>
+  $.ajax({
+    url: "/api/getroles",
+    method: "GET",
+    success: function(data) {
+      $roleSelect.find("option:not(:first)").remove();
+
+      data.forEach(function(role) {
+        var $option = $("<option>")
+          .val(role.id)
+          .text(role.name);
+
+        $roleSelect.append($option);
+      });
+
+      if (selectedRoleId) {
+        $roleSelect.val(selectedRoleId);
+      }
+    },
+    error: function(xhr, status, error) {
+      console.error("Error fetching roles:", error);
+    }
+  });
+});
+
+</script>
+    <script src="/src/assets/js/authjs.js"></script>
+    <!-- Your custom validation and togglePassword logic here -->
+  </body>
 </html>

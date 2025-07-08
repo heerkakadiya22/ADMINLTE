@@ -1,105 +1,98 @@
-const db = require("../config/db");
-const fs = require("fs");
+// manageuserController.js using Sequelize + Repository Pattern
+const adminRepo = require("../../repositories/adminRepository");
+const roleRepo = require("../../repositories/roleRepository");
 const imageHelper = require("../helpers/imageHelper");
 const dobHelper = require("../helpers/dobHelper");
 
-// Render Manage Users page
-exports.getAllUser = (req, res) => {
+// Render Manage Users Page
+exports.getAllUser = async (req, res) => {
   const id = req.session.adminId;
+  try {
+    const admin = await adminRepo.findById(id);
+    if (!admin) return renderManageUser(res, req.csrfToken(), "", "", 0, null);
 
-  const sql = "SELECT * FROM admin WHERE id = ?";
-  db.query(sql, [id], (err, result) => {
-    if (err || result.length === 0) {
-      return res.render("manageuser", {
-        csrfToken: req.csrfToken(),
-        name: "",
-        email: "",
-        roleId: 0,
-        image: imageHelper.getImageUrl(),
-        currentPage: "manageuser",
-        pageTitle: "User List",
-        breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
-        success: null,
-      });
-    }
+    return renderManageUser(
+      res,
+      req.csrfToken(),
+      admin.name,
+      admin.email,
+      admin.roleId,
+      imageHelper.getImageUrl(admin.image),
+      req.session.success
+    );
+  } catch (err) {
+    console.error(err);
+    return renderManageUser(res, req.csrfToken(), "", "", 0, null);
+  }
 
-    const admin = result[0];
-    const imagePath = imageHelper.getImageUrl(admin.image);
-
-    const successMessage = req.session.success;
+  function renderManageUser(
+    res,
+    csrfToken,
+    name,
+    email,
+    roleId,
+    image,
+    success = null
+  ) {
     req.session.success = null;
-
     res.render("manageuser", {
-      csrfToken: req.csrfToken(),
-      name: admin.name,
-      email: admin.email,
-      roleId: admin.roleId,
-      image: imagePath,
+      csrfToken,
+      name,
+      email,
+      roleId,
+      image: image || imageHelper.getImageUrl(),
       currentPage: "manageuser",
       pageTitle: "User List",
       breadcrumbs: [{ label: "Home", url: "/" }, { label: "User List" }],
-      success: successMessage,
+      success,
     });
-  });
+  }
 };
 
 // Return users JSON
-exports.apiGetAllUsers = (req, res) => {
-  const userSql = `
-    SELECT a.*, r.name AS role_name
-    FROM admin a
-    LEFT JOIN roles r ON a.roleId = r.id
-  `;
-  db.query(userSql, (err, users) => {
-    if (err) {
-      return res.status(500).json({ error: "Failed to fetch users." });
-    }
+exports.apiGetAllUsers = async (req, res) => {
+  try {
+    const users = await adminRepo.findWithRoles();
     res.json(users);
-  });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Failed to fetch users." });
+  }
 };
 
-// Show Add User
-exports.showAddUser = (req, res) => {
-  const id = req.session.adminId;
-  const sqlAdmin = "SELECT * FROM admin WHERE id = ?";
-  const sqlRoles = "SELECT * FROM roles";
+// Show Add User Form
+exports.showAddUser = async (req, res) => {
+  try {
+    const admin = await adminRepo.findById(req.session.adminId);
+    const roles = await roleRepo.getAll();
+    const image = imageHelper.getImageUrl(admin.image);
 
-  db.query(sqlAdmin, [id], (err, adminResult) => {
-    if (err || adminResult.length === 0) {
-      return res.redirect("/login");
-    }
-
-    const admin = adminResult[0];
-    const imagePath = imageHelper.getImageUrl(admin.image);
-
-    db.query(sqlRoles, (roleErr, roleResults) => {
-      if (roleErr) {
-        return res.status(500).send("Error loading form.");
-      }
-
-      res.render("userForm", {
-        isEdit: false,
-        name: admin.name,
-        roleId: admin.roleId,
-        csrfToken: req.csrfToken(),
-        currentPage: "manageuser",
-        error: null,
-        success: null,
-        image: imagePath,
-        pageTitle: "Add User",
-        breadcrumbs: [
-          { label: "Home", url: "/" },
-          { label: "Manage Users", url: "/manageuser" },
-          { label: "Add User" },
-        ],
-        roles: roleResults,
-      });
+    res.render("userForm", {
+      isEdit: false,
+      name: admin.name,
+      roleId: admin.roleId,
+      csrfToken: req.csrfToken(),
+      currentPage: "manageuser",
+      error: null,
+      success: null,
+      image,
+      pageTitle: "Add User",
+      breadcrumbs: [
+        { label: "Home", url: "/" },
+        { label: "Manage Users", url: "/manageuser" },
+        { label: "Add User" },
+      ],
+      roles,
+      editRoleId: null,
     });
-  });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error loading form.");
+  }
 };
 
 // Add User
-exports.addUser = (req, res) => {
+exports.addUser = async (req, res) => {
   const {
     name,
     email,
@@ -114,152 +107,113 @@ exports.addUser = (req, res) => {
     roleId,
   } = req.body;
 
-  if (password !== confirmPassword) {
+  if (password !== confirmPassword)
     return renderWithError("Passwords do not match.");
-  }
 
-  const image = req.file ? req.file.filename : imageHelper.getDefaultImage();
-  const hobbyFormatted = hobby
-    ? Array.isArray(hobby)
-      ? hobby.join(",")
-      : hobby
-    : "";
+  const image = imageHelper.saveImage(req.file);
+  const hobbyFormatted = Array.isArray(hobby) ? hobby.join(",") : hobby || "";
 
-  const checkSql = `SELECT * FROM admin WHERE username = ? OR email = ?`;
-  db.query(checkSql, [username, email], (err, existingUsers) => {
-    if (err) {
-      return renderWithError("Database error while checking existing users.");
-    }
-    if (existingUsers.length) {
-      const existing = existingUsers[0];
+  try {
+    const existingUser = await adminRepo.findByUsernameOrEmail(username, email);
+    if (existingUser) {
       let conflict = "A user with the same credentials already exists.";
-      if (existing.username === username) conflict = "Username already exists.";
-      if (existing.email === email) conflict = "Email already exists.";
+      if (existingUser.username === username)
+        conflict = "Username already exists.";
+      if (existingUser.email === email) conflict = "Email already exists.";
       return renderWithError(conflict);
     }
 
-    const insertSql = `
-      INSERT INTO admin 
-      (name, email, password, username, image, phone_no, address, hobby, dob, gender, roleId)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
+    await adminRepo.createUser({
       name,
       email,
       password,
       username,
       image,
-      phone,
+      phone_no: phone,
       address,
-      hobbyFormatted,
+      hobby: hobbyFormatted,
       dob,
       gender,
       roleId,
-    ];
-
-    db.query(insertSql, values, (insertErr) => {
-      if (insertErr) {
-        return renderWithError("Failed to add user.");
-      }
-      req.session.success = "User added successfully!";
-      res.redirect("/manageuser");
     });
-  });
 
-  function renderWithError(errorMessage) {
-    const id = req.session.adminId;
-    const sqlAdmin = "SELECT * FROM admin WHERE id = ?";
-    const sqlRoles = "SELECT * FROM roles";
+    req.session.success = "User added successfully!";
+    res.redirect("/manageuser");
+  } catch (error) {
+    console.error(error);
+    renderWithError("Failed to add user.");
+  }
 
-    db.query(sqlAdmin, [id], (err, adminResult) => {
-      if (err || adminResult.length === 0) {
-        return res.redirect("/login");
-      }
-      const admin = adminResult[0];
-      const imagePath = imageHelper.getImageUrl(admin.image);
+  async function renderWithError(errorMessage) {
+    const admin = await adminRepo.findById(req.session.adminId);
+    const roles = await roleRepo.getAll();
+    const image = imageHelper.getImageUrl(admin.image);
 
-      db.query(sqlRoles, (roleErr, roleResults) => {
-        res.render("userForm", {
-          isEdit: false,
-          name: admin.name,
-          roleId: admin.roleId,
-          csrfToken: req.csrfToken(),
-          currentPage: "manageuser",
-          error: errorMessage,
-          success: null,
-          image: imagePath,
-          pageTitle: "Add User",
-          breadcrumbs: [
-            { label: "Home", url: "/" },
-            { label: "Manage Users", url: "/manageuser" },
-            { label: "Add User" },
-          ],
-          roles: roleResults,
-        });
-      });
+    res.render("userForm", {
+      isEdit: false,
+      name: admin.name,
+      roleId: admin.roleId,
+      csrfToken: req.csrfToken(),
+      currentPage: "manageuser",
+      error: errorMessage,
+      success: null,
+      image,
+      pageTitle: "Add User",
+      breadcrumbs: [
+        { label: "Home", url: "/" },
+        { label: "Manage Users", url: "/manageuser" },
+        { label: "Add User" },
+      ],
+      roles,
     });
   }
 };
 
 // Show Edit User
-exports.showEditUser = (req, res) => {
-  const userId = req.params.id;
-  const adminId = req.session.adminId;
+exports.showEditUser = async (req, res) => {
+  try {
+    const user = await adminRepo.findById(req.params.id);
+    const admin = await adminRepo.findById(req.session.adminId);
+    const roles = await roleRepo.findAll();
 
-  const getUserSql = "SELECT * FROM admin WHERE id = ?";
-  const getAdminSql = "SELECT * FROM admin WHERE id = ?";
-  const getRolesSql = "SELECT * FROM roles";
+    if (!user || !admin) return res.redirect("/manageuser");
 
-  db.query(getUserSql, [userId], (err, userResult) => {
-    if (err || userResult.length === 0) {
-      return res.redirect("/manageuser");
-    }
-    const user = userResult[0];
-
-    db.query(getAdminSql, [adminId], (err2, adminResult) => {
-      if (err2 || adminResult.length === 0) {
-        return res.redirect("/login");
-      }
-      const admin = adminResult[0];
-      const adminImage = imageHelper.getImageUrl(admin.image);
-      const dobFormatted = dobHelper.formatDob(user.dob);
-
-      db.query(getRolesSql, (err3, roles) => {
-        res.render("userForm", {
-          isEdit: true,
-          name: admin.name,
-          roleId: admin.roleId,
-          csrfToken: req.csrfToken(),
-          currentPage: "manageuser",
-          error: null,
-          success: null,
-          image: adminImage,
-          pageTitle: "Edit User",
-          breadcrumbs: [
-            { label: "Home", url: "/" },
-            { label: "Manage Users", url: "/manageuser" },
-            { label: "Edit User" },
-          ],
-          roles,
-          editId: user.id,
-          editName: user.name,
-          editEmail: user.email,
-          editPhone: user.phone_no,
-          editUsername: user.username,
-          editAddress: user.address,
-          editDob: dobFormatted,
-          editGender: user.gender,
-          editHobby: user.hobby ? user.hobby.split(",") : [],
-          editImage: imageHelper.getImageUrl(user.image),
-          editRoleId: user.roleId,
-        });
-      });
+    res.render("userForm", {
+      isEdit: true,
+      name: admin.name,
+      roleId: admin.roleId,
+      csrfToken: req.csrfToken(),
+      currentPage: "manageuser",
+      error: null,
+      success: null,
+      image: imageHelper.getImageUrl(admin.image),
+      pageTitle: "Edit User",
+      breadcrumbs: [
+        { label: "Home", url: "/" },
+        { label: "Manage Users", url: "/manageuser" },
+        { label: "Edit User" },
+      ],
+      roles,
+      editId: user.id,
+      editName: user.name,
+      editEmail: user.email,
+      editPhone: user.phone_no,
+      editUsername: user.username,
+      editAddress: user.address,
+      editDob: dobHelper.formatDob(user.dob),
+      editGender: user.gender,
+      editHobby: user.hobby ? user.hobby.split(",") : [],
+      editImage: imageHelper.getImageUrl(user.image),
+      editRoleId: user.roleId || null,
     });
-  });
+  } catch (err) {
+    console.error(err);
+    res.redirect("/manageuser");
+  }
 };
 
 // Update User
-exports.updateUser = (req, res) => {
+exports.updateUser = async (req, res) => {
   const {
     id,
     name,
@@ -273,135 +227,97 @@ exports.updateUser = (req, res) => {
     roleId,
   } = req.body;
 
-  if (!id) {
-    return res.status(400).send("Invalid user ID.");
-  }
+  const newImage = req.file ? imageHelper.saveImage(req.file) : null;
+  const hobbyString = Array.isArray(hobby) ? hobby.join(",") : hobby || "";
 
-  const newImage = req.file ? req.file.filename : null;
+  try {
+    const user = await adminRepo.findById(id);
+    if (!user) return res.status(404).send("User not found.");
 
-  const getImageSql = "SELECT image FROM admin WHERE id = ?";
-  db.query(getImageSql, [id], (err, result) => {
-    if (err || result.length === 0) {
-      return res.status(500).send("User not found.");
-    }
-    const oldImage = result[0].image || imageHelper.getDefaultImage();
-    const finalImage = newImage || oldImage;
-
-    if (newImage && oldImage !== imageHelper.getDefaultImage()) {
-      const oldPath = imageHelper.getImagePath(oldImage);
-      fs.unlink(oldPath, (unlinkErr) => {
-        if (unlinkErr && unlinkErr.code !== "ENOENT") {
-          console.error("Failed to delete old image:", unlinkErr);
-        }
-      });
+    const existing = await adminRepo.findByUsernameOrEmail(username, email);
+    if (existing && existing.id !== parseInt(id)) {
+      const conflict =
+        existing.username === username
+          ? "Username already exists."
+          : "Email already exists.";
+      return renderWithError(conflict);
     }
 
-    const hobbyString = hobby
-      ? Array.isArray(hobby)
-        ? hobby.join(",")
-        : hobby
-      : "";
-    const formattedDob = dob || null;
+    const finalImage = newImage || user.image;
+    if (newImage && !imageHelper.isDefaultImage(user.image)) {
+      imageHelper.deleteImage(user.image);
+    }
 
-    const checkSql = `SELECT * FROM admin WHERE (username = ? OR email = ?) AND id != ?`;
-    db.query(checkSql, [username, email, id], (checkErr, exists) => {
-      if (checkErr)
-        return renderWithError("Database error checking uniqueness.");
-      if (exists.length) {
-        const conflict =
-          exists[0].username === username
-            ? "Username already exists."
-            : "Email already exists.";
-        return renderWithError(conflict);
-      }
-
-      const updateSql = `
-        UPDATE admin SET
-        name = ?, email = ?, username = ?, image = ?, address = ?, dob = ?, gender = ?, phone_no = ?, hobby = ?, roleId = ?
-        WHERE id = ?
-      `;
-      const params = [
-        name,
-        email,
-        username,
-        finalImage,
-        address,
-        formattedDob,
-        gender,
-        phone,
-        hobbyString,
-        roleId || null,
-        id,
-      ];
-
-      db.query(updateSql, params, (updateErr) => {
-        if (updateErr) return renderWithError("Update failed.");
-        req.session.success = "User updated successfully.";
-        res.redirect("/manageuser");
-      });
+    await adminRepo.updateUser(id, {
+      name,
+      email,
+      username,
+      image: finalImage,
+      address,
+      dob,
+      gender,
+      phone_no: phone,
+      hobby: hobbyString,
+      roleId: roleId || null,
     });
 
-    function renderWithError(errorMessage) {
-      const getRolesSql = "SELECT * FROM roles";
-      db.query(getRolesSql, (roleErr, roles) => {
-        res.render("userForm", {
-          isEdit: true,
-          name: req.session.name,
-          roleId: req.session.roleId,
-          csrfToken: "",
-          currentPage: "manageuser",
-          error: errorMessage,
-          success: null,
-          image: imageHelper.getImageUrl(finalImage),
-          pageTitle: "Edit User",
-          breadcrumbs: [
-            { label: "Home", url: "/" },
-            { label: "Manage Users", url: "/manageuser" },
-            { label: "Edit User" },
-          ],
-          roles,
-          editId: id,
-          editName: name,
-          editEmail: email,
-          editPhone: phone,
-          editUsername: username,
-          editAddress: address,
-          editDob: formattedDob,
-          editGender: gender,
-          editHobby: hobby ? (Array.isArray(hobby) ? hobby : [hobby]) : [],
-          editImage: imageHelper.getImageUrl(finalImage),
-          editRoleId: roleId || null,
-        });
-      });
-    }
-  });
+    req.session.success = "User updated successfully.";
+    res.redirect("/manageuser");
+  } catch (err) {
+    console.error(err);
+    renderWithError("Update failed.");
+  }
+
+  async function renderWithError(errorMessage) {
+    const roles = await roleRepo.findAll();
+    const image = imageHelper.getImageUrl(newImage);
+
+    res.render("userForm", {
+      isEdit: true,
+      name: req.session.name,
+      roleId: req.session.roleId,
+      csrfToken: req.csrfToken(),
+      currentPage: "manageuser",
+      error: errorMessage,
+      success: null,
+      image,
+      pageTitle: "Edit User",
+      breadcrumbs: [
+        { label: "Home", url: "/" },
+        { label: "Manage Users", url: "/manageuser" },
+        { label: "Edit User" },
+      ],
+      roles,
+      editId: id,
+      editName: name,
+      editEmail: email,
+      editPhone: phone,
+      editUsername: username,
+      editAddress: address,
+      editDob: dob,
+      editGender: gender,
+      editHobby: hobby ? (Array.isArray(hobby) ? hobby : [hobby]) : [],
+      editImage: image,
+      editRoleId: roleId || null,
+    });
+  }
 };
 
 // Delete User
-exports.deleteUser = (req, res) => {
+exports.deleteUser = async (req, res) => {
   const userId = req.params.id;
 
-  const getUserSql = "SELECT name, image FROM admin WHERE id = ?";
-  db.query(getUserSql, [userId], (err, userResult) => {
-    if (err || userResult.length === 0) {
-      return res.redirect("/manageuser");
-    }
+  try {
+    const user = await adminRepo.findById(userId);
+    if (!user) return res.redirect("/manageuser");
 
-    const { name: userName, image } = userResult[0];
-    const deleteSql = "DELETE FROM admin WHERE id = ?";
+    await adminRepo.deleteUser(userId);
+    imageHelper.deleteImage(user.image);
 
-    db.query(deleteSql, [userId], (err2) => {
-      if (!err2 && image && image !== imageHelper.getDefaultImage()) {
-        const imagePath = imageHelper.getImagePath(image);
-        fs.unlink(imagePath, (unlinkErr) => {
-          if (unlinkErr && unlinkErr.code !== "ENOENT") {
-            console.error("Image delete failed:", unlinkErr);
-          }
-        });
-      }
-
-      req.session.success = `User "${userName}" deleted successfully!`;
-      res.redirect("/manageuser");
-    });
-  });
+    req.session.success = `User "${user.name}" deleted successfully!`;
+    res.redirect("/manageuser");
+  } catch (err) {
+    console.error(err);
+    res.redirect("/manageuser");
+  }
 };

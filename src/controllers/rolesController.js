@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const { Role, sequelize } = require("../../models");
+const roleRepository = require("../../repositories/roleRepository");
 
 // controllers/roleController.js
 
@@ -42,15 +43,14 @@ exports.getAllRoles = (req, res) => {
   });
 };
 
-exports.apiGetAllRoles = (req, res) => {
-  Role.findAll()
-    .then((roles) => {
-      res.json(roles);
-    })
-    .catch((err) => {
-      console.error("Error fetching roles:", err);
-      res.status(500).json({ error: "Failed to fetch roles." });
-    });
+exports.apiGetAllRoles = async (req, res) => {
+  try {
+    const roles = await roleRepository.findAll();
+    res.json(roles);
+  } catch (err) {
+    console.error("Error fetching roles:", err);
+    res.status(500).json({ error: "Failed to fetch roles." });
+  }
 };
 
 // Show Create Role Form
@@ -101,7 +101,7 @@ exports.showCreateRoleForm = async (req, res) => {
 exports.createRole = async (req, res) => {
   const adminId = req.session.adminId;
   const { name, description, active } = req.body;
-  const isActive = active === "on" ? true : false;
+  const isActive = active === "on";
 
   async function renderWithError(errorMessage) {
     let admin = { name: "", image: "", roleId: 0 };
@@ -126,7 +126,7 @@ exports.createRole = async (req, res) => {
       error: errorMessage,
       name: admin.name,
       image: imagePath,
-      roleId: admin.roleId || 0, // ✅ added
+      roleId: admin.roleId || 0,
       currentPage: "rolelist",
       csrfToken: "",
       pageTitle: "Add Role",
@@ -143,15 +143,12 @@ exports.createRole = async (req, res) => {
       return renderWithError("Role name is required.");
     }
 
-    const existingRole = await Role.findOne({
-      where: { name: name.trim() },
-    });
-
+    const existingRole = await roleRepository.getByName(name.trim());
     if (existingRole) {
       return renderWithError("A role with this name already exists.");
     }
 
-    await Role.create({
+    await roleRepository.create({
       name: name.trim(),
       description,
       active: isActive,
@@ -220,10 +217,10 @@ exports.showEditRoleForm = async (req, res) => {
 exports.updateRole = async (req, res) => {
   const roleId = req.params.id;
   const { name, description, active } = req.body;
-  const isActive = active === "on" ? true : false;
+  const isActive = active === "on";
 
   try {
-    const role = await Role.findByPk(roleId);
+    const role = await roleRepository.getById(roleId);
     if (!role) {
       req.session.success = "Role not found.";
       return res.redirect("/rolelist");
@@ -231,14 +228,14 @@ exports.updateRole = async (req, res) => {
 
     // Check uniqueness if name changed
     if (role.name !== name.trim()) {
-      const existingRole = await Role.findOne({ where: { name: name.trim() } });
+      const existingRole = await roleRepository.getByName(name.trim());
       if (existingRole) {
         req.session.success = "A role with this name already exists.";
         return res.redirect("/rolelist");
       }
     }
 
-    await role.update({
+    await roleRepository.update(roleId, {
       name: name.trim(),
       description,
       active: isActive,
@@ -258,14 +255,12 @@ exports.deleteRole = async (req, res) => {
   const roleId = req.params.id;
 
   try {
-    const role = await Role.findByPk(roleId);
+    const deleted = await roleRepository.delete(roleId);
 
-    if (!role) {
+    if (!deleted) {
       req.session.success = "Role not found.";
       return res.redirect("/rolelist");
     }
-
-    await role.destroy();
 
     req.session.success = "✅ Role deleted successfully!";
     res.redirect("/rolelist");

@@ -1,7 +1,7 @@
 $(document).ready(function () {
   // Load roles dynamically
   $.ajax({
-    url: "/roles/api",
+    url: "/api/getroles",
     method: "GET",
     dataType: "json",
     success: function (roles) {
@@ -120,7 +120,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
   $.ajax({
-    url: "/api/users",
+    url: "/api/getusers",
     method: "GET",
     dataType: "json",
     success: function (users) {
@@ -251,6 +251,8 @@ document.addEventListener("click", function (e) {
   }
 });
 
+//editProfileForm
+
 $(function () {
   console.log("✅ Asterisk script running.");
 
@@ -295,5 +297,47 @@ $(function () {
         $asterisk.fadeOut();
       }
     });
+  });
+});
+
+//userform
+$(function () {
+  // Define the fields you want to target
+  var requiredFields = [
+    "name",
+    "email",
+    "username",
+    "password",
+    "confirmPassword",
+    "roleId",
+  ];
+
+  requiredFields.forEach(function (fieldName) {
+    var $field = $("#userForm").find("[name='" + fieldName + "']");
+    var id = $field.attr("id");
+
+    if (id) {
+      // Create the asterisk span
+      var $asterisk = $(
+        '<span class="required-star" style="color:red; margin-left:3px">*</span>'
+      );
+
+      // Append it to the label
+      $("label[for='" + id + "']").append($asterisk);
+
+      // Show or hide based on initial value
+      if ($field.val().trim() !== "") {
+        $asterisk.hide();
+      }
+
+      // Listen to input changes
+      $field.on("input change", function () {
+        if ($field.val().trim() === "") {
+          $asterisk.fadeIn();
+        } else {
+          $asterisk.fadeOut();
+        }
+      });
+    }
   });
 });

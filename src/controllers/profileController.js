@@ -1,6 +1,5 @@
 const path = require("path");
 const db = require("../config/db");
-const fs = require("fs");
 const imageHelper = require("../helpers/imageHelper");
 const dobHelper = require("../helpers/dobHelper");
 
@@ -95,7 +94,6 @@ exports.updateProfile = (req, res) => {
     req.body;
   let { hobby } = req.body;
   const id = req.session.adminId;
-  const newImage = req.file ? req.file.filename : null;
 
   const getUserSql = `
     SELECT admin.*, roles.name AS roleName
@@ -112,30 +110,19 @@ exports.updateProfile = (req, res) => {
 
     const user = result[0];
     const currentImage = user.image || imageHelper.getDefaultImage();
+    const newImage = req.file ? imageHelper.saveImage(req.file) : null;
     const imageToUse = newImage || currentImage;
 
-    // ✅ Delete old image if needed
-    if (newImage && currentImage !== imageHelper.getDefaultImage()) {
-      const oldImagePath = imageHelper.getImagePath(currentImage);
-      fs.unlink(oldImagePath, (unlinkErr) => {
-        if (unlinkErr && unlinkErr.code !== "ENOENT") {
-          console.error("Error deleting old image:", unlinkErr);
-        }
-      });
+    if (newImage && !imageHelper.isDefaultImage(currentImage)) {
+      imageHelper.deleteImage(currentImage);
     }
 
-    // ✅ Normalize hobbies
-    if (!hobby) {
-      hobby = [];
-    } else if (!Array.isArray(hobby)) {
-      hobby = [hobby];
-    }
+    if (!hobby) hobby = [];
+    else if (!Array.isArray(hobby)) hobby = [hobby];
     const hobbyString = hobby.join(",");
 
-    // ✅ Format DOB safely
     const formattedDob = dob || null;
 
-    // ✅ Check for duplicate username/email
     const checkSql = `
       SELECT * FROM admin
       WHERE (username = ? OR email = ?) AND id != ?
@@ -154,19 +141,10 @@ exports.updateProfile = (req, res) => {
         return renderWithError(conflictMessage, []);
       }
 
-      // ✅ Update profile
       const updateSql = `
         UPDATE admin SET
-          name = ?,
-          email = ?,
-          username = ?,
-          image = ?,
-          address = ?,
-          dob = ?,
-          gender = ?,
-          phone_no = ?,
-          hobby = ?,
-          roleId = ?
+          name = ?, email = ?, username = ?, image = ?, address = ?, dob = ?,
+          gender = ?, phone_no = ?, hobby = ?, roleId = ?
         WHERE id = ?
       `;
       const values = [
@@ -184,9 +162,7 @@ exports.updateProfile = (req, res) => {
       ];
 
       db.query(updateSql, values, (err) => {
-        if (err) {
-          return renderWithError("Database update failed.", []);
-        }
+        if (err) return renderWithError("Database update failed.", []);
 
         req.session.name = name;
         req.session.email = email;
@@ -200,9 +176,8 @@ exports.updateProfile = (req, res) => {
       });
     });
 
-    // ✅ Helper to render form with error
     function renderWithError(errorMessage, roleResults) {
-      if (!roleResults || roleResults.length === 0) {
+      if (!roleResults.length) {
         db.query(getRolesSql, (roleErr, roles) => {
           if (roleErr) {
             console.error("Error fetching roles:", roleErr);
@@ -215,7 +190,6 @@ exports.updateProfile = (req, res) => {
       }
     }
 
-    // ✅ Helper to actually render
     function renderPage(errorMessage, roles) {
       res.render("editProfile", {
         name,

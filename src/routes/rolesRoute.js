@@ -5,7 +5,7 @@ const csrf = require("csurf");
 const csrfProtection = csrf();
 
 router.get("/rolelist", csrfProtection, roleController.getAllRoles);
-router.get("/roles/api", roleController.apiGetAllRoles);
+router.get("/api/getroles", roleController.apiGetAllRoles);
 router.get("/addrole", csrfProtection, roleController.showCreateRoleForm);
 router.post("/addrole", roleController.createRole);
 router.get("/roles/:id/edit", csrfProtection, roleController.showEditRoleForm);
